@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 01 | Introducción a Spring Boot & Microservicios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030712;
+            --sidebar-bg: #0b0f19;
+            --glass: rgba(17, 24, 39, 0.85);
+            --accent: #6db33f;
+            --accent-dim: rgba(109, 179, 63, 0.15);
+            --cyan: #06b6d4;
+            --purple: #8b5cf6;
+            --orange: #f97316;
+            --red: #ef4444;
+            --text-dim: #9ca3af;
+            --border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --glow: rgba(109, 179, 63, 0.35);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #f3f4f6; display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* Background blur blobs */
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: blur(120px); opacity: 0.15; }
+        .blob { position: absolute; width: 500px; height: 500px; border-radius: 50%; }
+        .blob-1 { top: -100px; left: -100px; background: var(--accent); animation: float 18s infinite alternate; }
+        .blob-2 { bottom: -100px; right: -100px; background: var(--cyan); animation: float 22s infinite alternate-reverse; }
+        @keyframes float { from { transform: translate(0,0); } to { transform: translate(120px, 80px); } }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 340px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
+            height: 100vh; position: sticky; top: 0; padding: 2rem; display: flex;
+            flex-direction: column; z-index: 100; backdrop-filter: blur(30px);
+        }
+        .logo-box { margin-bottom: 2rem; }
+        .logo-box h2 { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; display: flex; align-items: center; gap: 0.6rem; }
+        .logo-box span { color: var(--accent); }
+        .logo-box i { color: var(--accent); }
+        .logo-sub { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-top: 0.2rem; }
+
+        .progress-box { background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 2rem; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.5rem; }
+        .progress-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 14%; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 10px var(--accent); }
+
+        .nav-menu { list-style: none; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem; }
+        .nav-item {
+            padding: 0.85rem 1.1rem; border-radius: 12px; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 0.8rem; color: var(--text-dim);
+            border: 1px solid transparent; font-size: 0.85rem; font-weight: 600;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.04); color: white; transform: translateX(4px); }
+        .nav-item.active { background: var(--accent-dim); border-color: rgba(109,179,63,0.3); color: var(--accent); font-weight: 700; }
+        .nav-item.completed i { color: var(--accent); }
+
+        /* --- MAIN CONTENT --- */
+        .content-area { flex: 1; padding: 3.5rem 5rem; max-width: 1250px; margin: 0 auto; width: 100%; }
+        .section { display: none; opacity: 0; transform: translateY(20px); }
+        .section.active { display: block; opacity: 1; transform: translateY(0); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        /* Headers & Badges */
+        .badge { background: var(--accent-dim); color: var(--accent); padding: 6px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1.2rem; display: inline-block; border: 1px solid rgba(109,179,63,0.25); }
+        .badge.cyan-badge { background: rgba(6,182,212,0.1); color: var(--cyan); border-color: rgba(6,182,212,0.2); }
+        .badge.purple-badge { background: rgba(139,92,246,0.1); color: var(--purple); border-color: rgba(139,92,246,0.2); }
+        h1 { font-size: 3.2rem; font-weight: 900; letter-spacing: -2px; line-height: 1.05; margin-bottom: 1.5rem; background: linear-gradient(to right, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.1rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 3rem; max-width: 750px; }
+
+        /* Info Card Box */
+        .concept-card { background: rgba(109, 179, 63, 0.03); border-left: 4px solid var(--accent); padding: 1.8rem; border-radius: 0 20px 20px 0; margin-bottom: 2.5rem; }
+        .concept-card h4 { font-size: 1.05rem; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem; }
+        .concept-card p { font-size: 0.95rem; color: var(--text-dim); line-height: 1.6; }
+
+        /* General Grids */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; margin-bottom: 2.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 2.5rem; }
+
+        .glass-card { background: var(--glass); border: 1px solid var(--border); padding: 2rem; border-radius: 24px; transition: all 0.4s; position: relative; }
+        .glass-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .glass-card h3 { font-size: 1.3rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 700; }
+        .glass-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.55; }
+
+        /* Timeline and steps */
+        .step-item { display: flex; gap: 1.2rem; margin-bottom: 1.8rem; }
+        .step-num { width: 36px; height: 36px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(109, 179, 63, 0.4); }
+        .step-text h5 { font-size: 1.1rem; margin-bottom: 0.3rem; font-weight: 700; }
+        .step-text p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+        /* Monolith vs Microservices Comparison Graphic */
+        .compare-box { border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .compare-box.mono { background: rgba(239,68,68,0.02); border-color: rgba(239,68,68,0.15); }
+        .compare-box.micro { background: rgba(109,179,63,0.02); border-color: rgba(109,179,63,0.15); }
+        .compare-header { font-size: 0.95rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem; }
+        .mono .compare-header { color: var(--red); }
+        .micro .compare-header { color: var(--accent); }
+        
+        .box-app { padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem; text-align: center; }
+        .app-module { padding: 0.55rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+        .mono .app-module { color: #fca5a5; border-color: rgba(239,68,68,0.1); }
+        .micro .app-module { color: #a3e635; border-color: rgba(109,179,63,0.1); }
+        
+        .micro-flow { display: flex; flex-direction: column; gap: 0.6rem; }
+        .micro-item { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; background: rgba(109,179,63,0.05); border: 1px solid rgba(109,179,63,0.15); color: #a3e635; }
+        .micro-port { font-family: 'Fira Code', monospace; font-size: 0.65rem; opacity: 0.7; color: var(--text-dim); }
+
+        /* Video Box Styles */
+        .video-wrapper { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin: 2rem 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .video-info-strip { background: rgba(255,255,255,0.03); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .video-title { font-size: 0.85rem; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 0.5rem; }
+        .video-duration { font-size: 0.72rem; font-weight: 800; background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 6px; color: var(--text-dim); }
+        .video-frame-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+        .video-frame-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+
+        /* --- HEXAGON ARCHITECTURE WIDGET --- */
+        .hex-layout-container { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; margin-top: 1.5rem; align-items: center; }
+        .hex-svg-box { display: flex; justify-content: center; align-items: center; position: relative; }
+        .hex-svg-box svg { width: 100%; max-width: 440px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); }
+        
+        .hex-layer { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
+        .hex-layer:hover { stroke-width: 8px; filter: drop-shadow(0 0 15px var(--glow)); }
+        .adapter-layer:hover { filter: drop-shadow(0 0 15px rgba(139,92,246,0.6)); }
+        .ports-layer:hover { filter: drop-shadow(0 0 15px rgba(6,182,212,0.6)); }
+        .domain-layer:hover { fill: rgba(109,179,63,0.3) !important; filter: drop-shadow(0 0 15px rgba(109,179,63,0.6)); }
+        
+        .hex-layer.active-layer { stroke-width: 9px; }
+        .adapter-layer.active-layer { fill: rgba(139,92,246,0.15) !important; filter: drop-shadow(0 0 20px rgba(139,92,246,0.8)); }
+        .ports-layer.active-layer { fill: rgba(6,182,212,0.15) !important; filter: drop-shadow(0 0 20px rgba(6,182,212,0.8)); }
+        .domain-layer.active-layer { fill: rgba(109,179,63,0.35) !important; filter: drop-shadow(0 0 20px rgba(109,179,63,0.8)); }
+
+        .hex-info-panel { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; min-height: 420px; display: flex; flex-direction: column; justify-content: space-between; }
+        .hex-info-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
+        .hex-info-icon { font-size: 1.6rem; }
+        .hex-info-title { font-size: 1.3rem; font-weight: 700; }
+        .hex-info-body { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1.5rem; }
+        .hex-code-tabs { display: flex; gap: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 10px; margin-bottom: 0.8rem; }
+        .hex-tab-btn { background: transparent; border: none; color: var(--text-dim); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; }
+        .hex-tab-btn.active-tab { background: rgba(255,255,255,0.06); color: white; }
+
+        /* --- INTERACTIVE SIMULATOR --- */
+        .simulator-area { background: #070c17; border: 1px solid var(--border); border-radius: 24px; padding: 2rem; overflow: hidden; position: relative; margin-top: 1.5rem; }
+        .sim-grid { display: flex; flex-direction: column; gap: 1.5rem; align-items: center; position: relative; }
+        .sim-row { display: flex; justify-content: center; align-items: center; gap: 2rem; width: 100%; flex-wrap: wrap; }
+        .sim-node {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            padding: 0.75rem 1.2rem; border-radius: 12px; font-size: 0.78rem; font-weight: 700;
+            text-align: center; min-width: 140px; position: relative; transition: all 0.3s;
+            display: flex; flex-direction: column; gap: 0.2rem;
+        }
+        .sim-node.active-node { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--glow); color: white; }
+        .sim-node.gateway { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.06); }
+        .sim-node.eureka { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.06); }
+        .sim-node.database { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.06); }
+        
+        .sim-icon { font-size: 1.2rem; margin-bottom: 0.2rem; }
+        .sim-port { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--text-dim); }
+        .sim-line { height: 2px; flex-grow: 1; background: var(--border); position: relative; min-width: 40px; }
+        .sim-line::after { content: ''; position: absolute; top: -3px; left: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); transition: transform 0.6s; }
+        .sim-line.animate-line::after { background: var(--accent); animation: pulseDot 0.8s linear infinite; }
+        
+        @keyframes pulseDot {
+            0% { left: 0%; opacity: 1; }
+            100% { left: 100%; opacity: 0.5; }
+        }
+
+        .sim-controls { display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center; width: 100%; }
+        .sim-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white;
+            padding: 0.6rem 1.2rem; border-radius: 12px; cursor: pointer; font-family: 'Outfit', sans-serif;
+            font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s;
+        }
+        .sim-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 5px 15px rgba(109,179,63,0.3); }
+        .sim-btn.secondary-btn:hover { background: var(--cyan); color: #000; border-color: var(--cyan); box-shadow: 0 5px 15px rgba(6,182,212,0.3); }
+
+        .terminal-box { background: #010409; border: 1px solid var(--border); border-radius: 16px; margin-top: 1.5rem; overflow: hidden; }
+        .terminal-header { background: #161b22; padding: 0.6rem 1.2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .term-dots { display: flex; gap: 6px; }
+        .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .term-title { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--text-dim); }
+        .terminal-body { padding: 1.2rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; line-height: 1.6; color: #e6edf3; min-height: 120px; overflow-x: auto; }
+        .term-key { color: var(--cyan); }
+        .term-str { color: #a5d6ff; }
+        .term-num { color: var(--orange); }
+        .term-success { color: var(--accent); font-weight: bold; }
+        .term-info { color: var(--text-dim); font-style: italic; }
+
+        /* Code Block stylings */
+        .code-window { background: #010409; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin: 1.5rem 0; }
+        .code-header { background: #161b22; padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .code-filename { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--text-dim); }
+        .code-body { padding: 1.2rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; line-height: 1.6; color: #e6edf3; overflow-x: auto; }
+        .k { color: #ff7b72; } /* keyword */
+        .f { color: #d2a8ff; } /* function */
+        .s { color: #a5d6ff; } /* string */
+        .c { color: #8b949e; font-style: italic; } /* comment */
+        
+        /* Bypass Lists for Bank constraints */
+        .bypass-list { display: flex; flex-direction: column; gap: 1rem; }
+        .bypass-card { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; display: flex; gap: 1rem; align-items: flex-start; }
+        .bypass-card i { font-size: 1.3rem; margin-top: 3px; }
+        .bypass-card.security i { color: var(--orange); }
+        .bypass-card.proxy i { color: var(--cyan); }
+        .bypass-card.offline i { color: var(--accent); }
+        .bypass-content h4 { font-size: 1rem; margin-bottom: 0.3rem; font-weight: 700; }
+        .bypass-content p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
+        .bypass-code { display: block; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 0.4rem 0.6rem; border-radius: 6px; font-family: 'Fira Code', monospace; font-size: 0.7rem; margin-top: 0.5rem; color: #a5d6ff; }
+
+        /* Dojo Rules Checklist */
+        .dojo-rule { display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.02); padding: 0.85rem 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 0.6rem; }
+        .dojo-rule i { font-size: 1.1rem; }
+        .dojo-rule.green i { color: var(--accent); }
+        .dojo-rule.blue i { color: var(--cyan); }
+        .dojo-rule.orange i { color: var(--orange); }
+        .dojo-rule span { font-size: 0.88rem; font-weight: 600; }
+
+        /* Navigation buttons at bottom */
+        .bottom-nav { display: flex; justify-content: space-between; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .nav-btn-step {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white;
+            padding: 0.8rem 1.5rem; border-radius: 12px; cursor: pointer; transition: all 0.3s;
+            font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem;
+        }
+        .nav-btn-step:hover { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 5px 15px rgba(109,179,63,0.3); }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+        /* Game & Tab elements */
+        .mill-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .mill-btn:hover:not(:disabled) {
+            background: rgba(139,92,246,0.08);
+            border-color: var(--purple);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .mill-btn.selected {
+            background: rgba(245,158,11,0.15) !important;
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+            font-weight: 700;
+        }
+        .mill-btn.correct {
+            background: rgba(16,185,129,0.15) !important;
+            border-color: #10b981 !important;
+            color: #10b981 !important;
+            font-weight: 700;
+        }
+        .mill-btn.incorrect {
+            background: rgba(239,68,68,0.15) !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+            font-weight: 700;
+        }
+        .lifeline-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .lifeline-btn:hover:not(:disabled) {
+            border-color: var(--cyan);
+            background: rgba(6,182,212,0.1);
+            box-shadow: 0 0 10px rgba(6,182,212,0.3);
+        }
+        .lifeline-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--border) !important;
+            box-shadow: none !important;
+            background: rgba(255,255,255,0.01) !important;
+        }
+        .ladder-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #7a829e;
+            border: 1px solid transparent;
+        }
+        .ladder-item.active {
+            background: rgba(245,158,11,0.12);
+            border-color: rgba(245,158,11,0.25);
+            color: #f59e0b;
+            font-weight: 700;
+        }
+        .ladder-item.cleared {
+            color: var(--accent);
+            opacity: 0.6;
+        }
+        .hex-tab-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .hex-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        .hex-tab-btn.active-tab {
+            background: var(--accent-dim);
+            border-color: rgba(109,179,63,0.3);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar">
+        <div class="logo-box">
+            <h2><i class="fa-solid fa-leaf"></i> Spring<span>Cloud</span></h2>
+            <div class="logo-sub">Clase 01: Fundamentos</div>
+        </div>
+
+        <div class="progress-box">
+            <div class="progress-header"><span>Progreso Sesión</span> <span id="percent-val">14%</span></div>
+            <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+        </div>
+
+        <nav class="nav-menu">
+            <li class="nav-item active" onclick="switchSection(0)"><i class="fa-solid fa-handshake"></i> 1. Bienvenida y Conexión</li>
+            <li class="nav-item" onclick="switchSection(1)"><i class="fa-solid fa-server"></i> 2. Monolito vs Microservicios</li>
+            <li class="nav-item" onclick="switchSection(2)"><i class="fa-solid fa-network-wired"></i> 3. Fundamentos REST & HTTP</li>
+            <li class="nav-item" onclick="switchSection(3)"><i class="fa-solid fa-cube"></i> 4. Arquitectura Hexagonal</li>
+            <li class="nav-item" onclick="switchSection(4)"><i class="fa-solid fa-diagram-project"></i> 5. Arquitectura en Acción</li>
+            <li class="nav-item" onclick="switchSection(5)"><i class="fa-solid fa-circle-play"></i> 6. Metodología Dojo</li>
+            <li class="nav-item" onclick="switchSection(6)"><i class="fa-solid fa-shield-halved"></i> 7. Adaptabilidad de Red</li>
+            <li class="nav-item" onclick="switchSection(7)"><i class="fa-solid fa-trophy"></i> 8. Juego Millonario & Checklist</li>
+        </nav>
+    </aside>
+
+    <!-- ══════════ MAIN CONTENT AREA ══════════ -->
+    <main class="content-area">
+
+        <!-- ══ SECCIÓN 1: BIENVENIDA Y CONEXIÓN ══ -->
+        <section id="section-0" class="section active">
+            <span class="badge">Bienvenida</span>
+            <h1>Hola, ¡bienvenidos al curso! 👋</h1>
+            <p class="subtitle">Comenzamos nuestro viaje hacia el ecosistema de Spring Boot y el desarrollo moderno de Microservicios Distribuidos en la Nube.</p>
+
+            <div class="concept-card">
+                <h4><i class="fa-solid fa-circle-info"></i> El Propósito de la Primera Clase</h4>
+                <p>Hoy no nos enredaremos instalando programas ni peleando con el compilador. La clase de hoy es para conocernos, entender qué tecnologías manejan en sus proyectos del día a día y entusiasmarlos con el valor de lo que van a construir en este curso.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="glass-card">
+                    <i class="fa-solid fa-users text-accent" style="font-size: 1.5rem; margin-bottom: 0.8rem; display: block;"></i>
+                    <h3>Conozcámonos un Poco</h3>
+                    <p>Queremos saber quién eres, qué rol cumples, cuál es tu experiencia con Java o bases de datos, y qué expectativas tienes para este curso.</p>
+                </div>
+                <div class="glass-card">
+                    <i class="fa-solid fa-compass text-cyan" style="font-size: 1.5rem; margin-bottom: 0.8rem; display: block;"></i>
+                    <h3>Nuestra Ruta de Aprendizaje</h3>
+                    <p>Aprenderemos a construir microservicios desde cero con Spring Boot, protegerlos con tokens de seguridad (JWT), conectarlos con Eureka y desplegarlos en contenedores usando Docker.</p>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <div></div>
+                <button class="nav-btn-step" onclick="switchSection(1)">Siguiente: Monolito vs Microservicios <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 2: MONOLITO VS MICROSERVICIOS ══ -->
+        <section id="section-1" class="section">
+            <span class="badge purple-badge">Arquitectura</span>
+            <h1>Del Monolito a los Microservicios 🏢</h1>
+            <p class="subtitle">Comprende cómo estructuramos el software moderno y por qué las grandes organizaciones están migrando sus aplicaciones principales a arquitecturas distribuidas.</p>
+
+            <div class="grid-2">
+                <div class="compare-box mono">
+                    <div class="compare-header"><i class="fa-solid fa-cube"></i> Monolítico (Un Solo Bloque)</div>
+                    <div class="box-app">
+                        <div class="app-module">🔑 Autenticación y JWT</div>
+                        <div class="app-module">👤 Gestión de Usuarios</div>
+                        <div class="app-module">📦 Catálogo de Productos</div>
+                        <div class="app-module">🛒 Procesamiento de Órdenes</div>
+                        <p class="text-dim" style="font-size: 0.72rem; margin-top: 0.5rem; line-height: 1.4;">
+                            ▲ **Un solo proceso compilado.** Si una sola funcionalidad de base de datos o de pago arroja un Memory Leak, la aplicación completa se detiene y cae para todos los usuarios.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="compare-box micro">
+                    <div class="compare-header"><i class="fa-solid fa-network-wired"></i> Microservicios (Distribuidos)</div>
+                    <div class="micro-flow">
+                        <div class="micro-item">🔑 Auth-Service <span class="micro-port">:8083</span></div>
+                        <div class="micro-item">👤 User-Service <span class="micro-port">:8082</span></div>
+                        <div class="micro-item">📦 Product-Service <span class="micro-port">:8081</span></div>
+                        <div class="micro-item">🛒 Order-Service <span class="micro-port">:8084</span></div>
+                        <p class="text-dim" style="font-size: 0.72rem; margin-top: 0.2rem; line-height: 1.4;">
+                            ▲ **Procesos aislados y autónomos.** Si falla el procesador de órdenes, la gente todavía puede navegar el catálogo y ver productos sin ningún problema. Escalabilidad granular.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Case Studies & Graphics -->
+            <div class="glass-card" style="margin-top: 1.5rem; padding: 1.5rem; border-color: rgba(139, 92, 246, 0.2);">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <i class="fa-solid fa-chart-line text-accent"></i> Casos Reales y Arquitectura Visual
+                </h3>
+                
+                <!-- Sub-tabs selector -->
+                <div style="display: flex; gap: 10px; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.6rem; overflow-x: auto;">
+                    <button class="hex-tab-btn active-tab" id="btn-mono-tab-0" onclick="switchMonoTab(0)">Aislamiento de DB (Visual)</button>
+                    <button class="hex-tab-btn" id="btn-mono-tab-1" onclick="switchMonoTab(1)">Amazon (Página Modular)</button>
+                    <button class="hex-tab-btn" id="btn-mono-tab-2" onclick="switchMonoTab(2)">Netflix (Estrella de la Muerte)</button>
+                </div>
+
+                <!-- Tab content container -->
+                <div id="mono-tab-content">
+                    
+                    <!-- Tab 0: DB Isolation -->
+                    <div id="mono-pane-0" class="mono-pane">
+                        <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem;">
+                            <strong>Aislamiento de Persistencia:</strong> En microservicios, cada servicio es dueño de su base de datos. Ningún servicio accede directamente a las tablas de otro. Esto evita cuellos de botella y acoplamiento en la base de datos.
+                        </p>
+                        <div class="grid-2">
+                            <!-- Monolith DB -->
+                            <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: 12px; border: 1px solid rgba(239,68,68,0.15); text-align: center;">
+                                <h5 style="color: var(--red); margin-bottom: 0.6rem; font-size: 0.85rem;"><i class="fa-solid fa-cube"></i> Base de Datos Acoplada (Monolito)</h5>
+                                <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                                    <span class="badge" style="background:rgba(255,255,255,0.05); font-size: 0.65rem;">Auth</span>
+                                    <span class="badge" style="background:rgba(255,255,255,0.05); font-size: 0.65rem;">Products</span>
+                                    <span class="badge" style="background:rgba(255,255,255,0.05); font-size: 0.65rem;">Orders</span>
+                                </div>
+                                <div style="font-size: 1.2rem; margin: 0.4rem 0;">⬇️ ⬇️ ⬇️</div>
+                                <div style="background: rgba(239,68,68,0.1); border: 2px solid var(--red); padding: 6px 12px; border-radius: 8px; display: inline-block; font-size: 0.78rem;">
+                                    <i class="fa-solid fa-database" style="color: var(--red);"></i> DB Central Única
+                                </div>
+                                <p style="font-size: 0.72rem; color: var(--text-dim); margin-top: 0.8rem; line-height: 1.3;">
+                                    ⚠️ <strong>Riesgo:</strong> Si la tabla de facturación se bloquea o tiene consultas lentas, todo el sistema se paraliza y colapsa.
+                                </p>
+                            </div>
+                            
+                            <!-- Microservices DB -->
+                            <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: 12px; border: 1px solid rgba(109,179,63,0.15); text-align: center;">
+                                <h5 style="color: var(--accent); margin-bottom: 0.6rem; font-size: 0.85rem;"><i class="fa-solid fa-network-wired"></i> Bases de Datos Aisladas (Microservicios)</h5>
+                                <div style="display: flex; justify-content: space-around; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 0.8rem;">
+                                    <div style="background: rgba(255,255,255,0.02); padding: 6px; border: 1px solid var(--border); border-radius: 8px;">
+                                        <div style="font-size: 0.68rem; font-weight:700; color:white;">Auth-S</div>
+                                        <div style="font-size: 0.8rem; margin: 2px 0;">⬇️</div>
+                                        <div style="font-size: 0.65rem; color: var(--accent);"><i class="fa-solid fa-database"></i> Auth DB</div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.02); padding: 6px; border: 1px solid var(--border); border-radius: 8px;">
+                                        <div style="font-size: 0.68rem; font-weight:700; color:white;">Prod-S</div>
+                                        <div style="font-size: 0.8rem; margin: 2px 0;">⬇️</div>
+                                        <div style="font-size: 0.65rem; color: var(--accent);"><i class="fa-solid fa-database"></i> Prod DB</div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.02); padding: 6px; border: 1px solid var(--border); border-radius: 8px;">
+                                        <div style="font-size: 0.68rem; font-weight:700; color:white;">Order-S</div>
+                                        <div style="font-size: 0.8rem; margin: 2px 0;">⬇️</div>
+                                        <div style="font-size: 0.65rem; color: var(--accent);"><i class="fa-solid fa-database"></i> Order DB</div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.72rem; color: var(--text-dim); margin-top: 1rem; line-height: 1.3;">
+                                    ✅ <strong>Beneficio:</strong> Cada base de datos escala de manera independiente. Si Order DB falla, el catálogo sigue 100% operativo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 1: Amazon Page composition -->
+                    <div id="mono-pane-1" class="mono-pane" style="display: none;">
+                        <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem;">
+                            <strong>Composición de Interfaz por Microservicios:</strong> Cuando cargas la página de Amazon, decenas de microservicios colaboran para pintar diferentes partes de la pantalla. Si uno de ellos falla, el resto de la interfaz sigue funcionando.
+                        </p>
+                        <!-- Grid simulating the webpage mockup -->
+                        <div style="background: #1a1b26; border: 2px solid var(--border); border-radius: 12px; padding: 12px; font-family: sans-serif; color: #a9b1d6; font-size: 0.78rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                            <!-- Fake Navbar -->
+                            <div style="background: #232f3e; padding: 6px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="color: #ff9900;"><i class="fa-solid fa-shopping-cart"></i> amazon.com</strong>
+                                <span class="badge" style="background: rgba(109,179,63,0.1); color: var(--accent); border-color: rgba(109,179,63,0.2); font-size: 0.65rem;">Auth-Service: ONLINE</span>
+                            </div>
+                            
+                            <!-- Fake Layout Body -->
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                                <!-- Left Main Area -->
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <!-- Product Info -->
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
+                                        <h4 style="color: white; margin-bottom: 2px; font-size: 0.85rem;">MacBook Pro M3</h4>
+                                        <div style="color: var(--accent); font-weight:700; font-size: 1rem; margin-bottom: 4px;">$1,999.00</div>
+                                        <span class="badge" style="font-size:0.6rem; background:rgba(255,255,255,0.05);">Product-Service: ONLINE</span>
+                                    </div>
+                                    
+                                    <!-- Reviews (OFFLINE) -->
+                                    <div style="background: rgba(239,68,68,0.05); border: 1px dashed var(--red); padding: 8px 12px; border-radius: 8px; text-align: center;">
+                                        <div style="color: var(--red); font-weight: 700; font-size: 0.78rem; margin-bottom: 2px;">
+                                            ⚠️ Opiniones de Clientes (Reviews-Service: OFFLINE)
+                                        </div>
+                                        <p style="font-size: 0.68rem; color: #ff8b8b; margin: 0; line-height: 1.3;">
+                                            [Respuesta Contingencia / Fallback] Las reseñas no están disponibles en este momento. Aún puedes añadir el artículo a tu carrito.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right Sidebar (Buy Box) -->
+                                <div style="background: rgba(109,179,63,0.05); border: 1px solid var(--accent); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; text-align: center;">
+                                    <h4 style="color: white; font-size: 0.8rem; margin: 0;">¿Listo para comprar?</h4>
+                                    <button style="background: #ff9900; color: #000; border: none; font-size: 0.72rem; font-weight: 700; width: 100%; border-radius: 4px; padding: 6px; cursor: pointer;">
+                                        Agregar al Carrito
+                                    </button>
+                                    <span class="badge" style="font-size: 0.6rem; background: rgba(109,179,63,0.1); color: var(--accent); border-color: rgba(109,179,63,0.2);">Cart-Service: ONLINE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Netflix Death Star -->
+                    <div id="mono-pane-2" class="mono-pane" style="display: none;">
+                        <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem;">
+                            <strong>La "Estrella de la Muerte" de Netflix:</strong> Netflix cuenta con más de 1,000 microservicios colaborando. En lugar de una estructura jerárquica rígida, se organizan en una red de comunicación descentralizada hiper-resiliente.
+                        </p>
+                        <div class="grid-2">
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
+                                <h4 style="font-size: 0.9rem; color: white; margin-bottom: 0.5rem;"><i class="fa-solid fa-shield-cat text-accent"></i> Resiliencia al Caos (Chaos Monkey)</h4>
+                                <p style="font-size: 0.75rem; line-height: 1.4; color: var(--text-dim);">
+                                    Netflix apaga intencionalmente servidores y microservicios en producción de forma aleatoria en horario laboral para forzar a sus desarrolladores a programar pensando que las cosas van a fallar. Si el microservicio de cobros cae, la película sigue reproduciéndose y el cobro se encola para después.
+                                </p>
+                            </div>
+                            
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                                <div style="position: relative; width: 90px; height: 90px; border: 2px dashed rgba(139,92,246,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 20px; height: 20px; background: var(--purple); border-radius: 50%; box-shadow: 0 0 15px var(--purple); display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:white; font-weight:bold;">Core</div>
+                                    <!-- Orbiting nodes -->
+                                    <div style="position: absolute; top: 8px; left: 8px; width: 8px; height: 8px; background: var(--cyan); border-radius: 50%;"></div>
+                                    <div style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%;"></div>
+                                    <div style="position: absolute; bottom: 8px; left: 8px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%;"></div>
+                                    <div style="position: absolute; bottom: 8px; right: 8px; width: 8px; height: 8px; background: var(--cyan); border-radius: 50%;"></div>
+                                </div>
+                                <span style="font-size: 0.65rem; color: var(--text-dim); margin-top: 0.6rem; font-family: 'Fira Code', monospace;">1000+ Microservicios Descentralizados</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Embedded Short Video for Microservices -->
+            <div class="video-wrapper" style="margin-top: 1.5rem;">
+                <div class="video-info-strip">
+                    <span class="video-title"><i class="fa-solid fa-circle-play"></i> Video de Clase: ¿Qué es un Microservicio?</span>
+                    <span class="video-duration">Inicio: 1:48 min</span>
+                </div>
+                <div class="video-frame-container">
+                    <iframe src="https://www.youtube.com/embed/1FsV0V00LBI?start=108" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-top: 1.5rem;">
+                <h3><i class="fa-solid fa-list-check text-accent"></i> Comparación de Impacto</h3>
+                <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    
+                    <div class="step-item" style="margin-bottom: 0;">
+                        <div class="step-num">1</div>
+                        <div class="step-text">
+                            <h5>Aislamiento de Fallos (Fault Isolation)</h5>
+                            <p style="font-size: 0.8rem; line-height: 1.4; color: var(--text-dim);">Si el servicio de alertas por correo se bloquea, el resto del banco (transferencias, consultas de saldo, pagos) sigue operando normalmente sin degradación general.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-item" style="margin-bottom: 0;">
+                        <div class="step-num">2</div>
+                        <div class="step-text">
+                            <h5>Despliegues Independientes (Independent Deployment)</h5>
+                            <p style="font-size: 0.8rem; line-height: 1.4; color: var(--text-dim);">¿Quieres subir un cambio visual al catálogo de beneficios? Compilas y redespliegas solo ese microservicio en 1 minuto, sin tener que reiniciar ni testear todo el core transaccional del banco.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item" style="margin-bottom: 0;">
+                        <div class="step-num">3</div>
+                        <div class="step-text">
+                            <h5>Escalabilidad Granular (Granular Scaling)</h5>
+                            <p style="font-size: 0.8rem; line-height: 1.4; color: var(--text-dim);">En días de alto tráfico (como el Black Friday), levantas 10 réplicas del servicio de Pagos con Docker en segundos. El servicio de Notificaciones sigue consumiendo el mínimo de recursos.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item" style="margin-bottom: 0;">
+                        <div class="step-num">4</div>
+                        <div class="step-text">
+                            <h5>Diversidad Tecnológica (Polyglot Stack)</h5>
+                            <p style="font-size: 0.8rem; line-height: 1.4; color: var(--text-dim);">El núcleo transaccional corre en Java 21 / Spring Boot por su robustez; el recomendador de productos corre en Python por sus librerías de IA, y el chat en Node.js. Cada módulo usa la herramienta ideal.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(0)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(2)">Siguiente: Fundamentos REST <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 3: FUNDAMENTOS REST & HTTP ══ -->
+        <section id="section-2" class="section">
+            <span class="badge cyan-badge">Protocolos</span>
+            <h1>Fundamentos REST: Los Hilos de la Red 📡</h1>
+            <p class="subtitle">Para que los microservicios cooperen, deben comunicarse mediante un protocolo común. Aprende los verbos y códigos HTTP en este lab en vivo.</p>
+
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                
+                <!-- Left: Verbos HTTP -->
+                <div class="glass-card" style="border-color: rgba(6, 182, 212, 0.2); padding: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: var(--cyan);"><i class="fa-solid fa-exchange-alt"></i> Verbos HTTP (Los Métodos)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.7rem;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981; border-color: rgba(16,185,129,0.3); font-family:monospace; font-size:0.72rem; min-width:65px; text-align:center;">GET</span>
+                            <div style="font-size: 0.82rem; color: var(--text-dim);"><strong style="color:white;">Leer:</strong> Obtiene un recurso sin modificarlo. <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;">GET /products/1</code></div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge" style="background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3); font-family:monospace; font-size:0.72rem; min-width:65px; text-align:center;">POST</span>
+                            <div style="font-size: 0.82rem; color: var(--text-dim);"><strong style="color:white;">Crear:</strong> Envía datos para crear algo nuevo. <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;">POST /orders</code></div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.3); font-family:monospace; font-size:0.72rem; min-width:65px; text-align:center;">PUT</span>
+                            <div style="font-size: 0.82rem; color: var(--text-dim);"><strong style="color:white;">Actualizar:</strong> Reemplaza completo el recurso. <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;">PUT /users/5</code></div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge" style="background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); font-family:monospace; font-size:0.72rem; min-width:65px; text-align:center;">DELETE</span>
+                            <div style="font-size: 0.82rem; color: var(--text-dim);"><strong style="color:white;">Eliminar:</strong> Borra el recurso del servidor. <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;">DELETE /users/5</code></div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge" style="background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.3); font-family:monospace; font-size:0.72rem; min-width:65px; text-align:center;">PATCH</span>
+                            <div style="font-size: 0.82rem; color: var(--text-dim);"><strong style="color:white;">Modificar parcial:</strong> Actualiza solo algunos campos. <code style="background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;">PATCH /users/5/email</code></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Codigos de Estado -->
+                <div class="glass-card" style="border-color: rgba(139,92,246,0.2); padding: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: var(--purple);"><i class="fa-solid fa-list-numeric"></i> Códigos de Estado HTTP</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <div style="display:flex; gap:8px; align-items:flex-start;">
+                            <span style="font-family:monospace;font-size:0.85rem;font-weight:800;color:#10b981;min-width:42px;">2xx</span>
+                            <div style="font-size:0.8rem;color:var(--text-dim);"><strong style="color:#10b981;">Éxito.</strong> 200 OK · 201 Created · 204 No Content</div>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:flex-start;">
+                            <span style="font-family:monospace;font-size:0.85rem;font-weight:800;color:#3b82f6;min-width:42px;">3xx</span>
+                            <div style="font-size:0.8rem;color:var(--text-dim);"><strong style="color:#3b82f6;">Redirección.</strong> 301 Moved · 304 Not Modified</div>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:flex-start;">
+                            <span style="font-family:monospace;font-size:0.85rem;font-weight:800;color:#f59e0b;min-width:42px;">4xx</span>
+                            <div style="font-size:0.8rem;color:var(--text-dim);"><strong style="color:#f59e0b;">Error del cliente.</strong> 400 Bad Request · 401 Unauthorized · 403 Forbidden · 404 Not Found</div>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:flex-start;">
+                            <span style="font-family:monospace;font-size:0.85rem;font-weight:800;color:#ef4444;min-width:42px;">5xx</span>
+                            <div style="font-size:0.8rem;color:var(--text-dim);"><strong style="color:#ef4444;">Error del servidor.</strong> 500 Internal Server Error · 503 Service Unavailable</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ LAB EN VIVO: ADIVINA EL VERBO HTTP ═══ -->
+            <div style="background:rgba(6,182,212,0.03); border:1px solid rgba(6,182,212,0.2); border-radius:20px; padding:2rem; margin-top:2rem;">
+                <h3 style="color:var(--cyan); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem;">
+                    <i class="fa-solid fa-flask"></i> Lab en Vivo: ¿Qué Verbo HTTP usarías?
+                </h3>
+                <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1.5rem;">Lee el escenario y selecciona el método HTTP correcto. El servidor te responde en tiempo real.</p>
+
+                <!-- Score Display -->
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:0.6rem 1.2rem; border-radius:10px; font-size:0.85rem;">
+                        <span style="color:var(--text-dim);">Pregunta</span> <span id="rest-q-num" style="color:white; font-weight:800;">1</span> / <span id="rest-q-total" style="color:var(--text-dim);">7</span>
+                    </div>
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); padding:0.6rem 1.2rem; border-radius:10px; font-size:0.85rem;">
+                        <i class="fa-solid fa-check" style="color:#10b981;"></i> <span id="rest-score" style="color:#10b981; font-weight:800;">0</span> correctas
+                    </div>
+                </div>
+
+                <!-- Scenario Box -->
+                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.2rem;">
+                    <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0.6rem;">Escenario</div>
+                    <p id="rest-scenario" style="font-size:1rem; font-weight:600; line-height:1.5;">El usuario quiere ver la lista de todos sus pedidos en la aplicación.</p>
+                    <div style="margin-top:0.8rem; font-family:monospace; font-size:0.82rem; color:var(--text-dim);">Endpoint: <span id="rest-endpoint" style="color:var(--cyan);">??? /api/orders</span></div>
+                </div>
+
+                <!-- Method Options -->
+                <div id="rest-options" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:0.8rem; margin-bottom:1rem;">
+                    <button class="mill-btn" onclick="checkRestVerb('GET')" id="rest-opt-GET">GET</button>
+                    <button class="mill-btn" onclick="checkRestVerb('POST')" id="rest-opt-POST">POST</button>
+                    <button class="mill-btn" onclick="checkRestVerb('PUT')" id="rest-opt-PUT">PUT</button>
+                    <button class="mill-btn" onclick="checkRestVerb('DELETE')" id="rest-opt-DELETE">DELETE</button>
+                    <button class="mill-btn" onclick="checkRestVerb('PATCH')" id="rest-opt-PATCH">PATCH</button>
+                </div>
+
+                <!-- Feedback & Server Response -->
+                <div id="rest-feedback" style="display:none; background:#010409; border:1px solid var(--border); border-radius:12px; padding:1rem; font-family:'Fira Code',monospace; font-size:0.78rem; line-height:1.6; margin-bottom:1rem;"></div>
+
+                <button id="rest-next-btn" onclick="nextRestQuestion()" style="display:none; background:var(--cyan); color:#000; border:none; padding:0.6rem 1.4rem; border-radius:10px; font-weight:800; cursor:pointer; font-family:inherit; font-size:0.85rem;">Siguiente Escenario →</button>
+            </div>
+
+            <!-- ═══ QUIZ: ADIVINA EL CÓDIGO DE RESPUESTA ═══ -->
+            <div style="background:rgba(139,92,246,0.03); border:1px solid rgba(139,92,246,0.2); border-radius:20px; padding:2rem; margin-top:1.5rem;">
+                <h3 style="color:var(--purple); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem;">
+                    <i class="fa-solid fa-server"></i> Quiz Rápido: ¿Qué código HTTP te respondería el servidor?
+                </h3>
+                <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1.5rem;">Lee la situación y elige el código de respuesta HTTP correcto.</p>
+
+                <div id="status-quiz-container">
+                    <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.2rem;">
+                        <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0.6rem;">Situación</div>
+                        <p id="status-scenario" style="font-size:1rem; font-weight:600; line-height:1.5;">Haces GET /users/999 pero el usuario con ID 999 no existe en la base de datos.</p>
+                    </div>
+                    <div id="status-options" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:0.8rem; margin-bottom:1rem;">
+                        <button class="mill-btn" onclick="checkStatusCode(200)">200 OK</button>
+                        <button class="mill-btn" onclick="checkStatusCode(201)">201 Created</button>
+                        <button class="mill-btn" onclick="checkStatusCode(404)">404 Not Found</button>
+                        <button class="mill-btn" onclick="checkStatusCode(500)">500 Server Error</button>
+                    </div>
+                    <div id="status-feedback" style="display:none; padding:1rem; border-radius:12px; font-weight:600; font-size:0.88rem;"></div>
+                    <button id="status-next-btn" onclick="nextStatusQuestion()" style="display:none; background:var(--purple); color:#fff; border:none; padding:0.6rem 1.4rem; border-radius:10px; font-weight:800; cursor:pointer; font-family:inherit; font-size:0.85rem; margin-top:0.8rem;">Siguiente →</button>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(1)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(3)">Siguiente: Arquitectura Hexagonal <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 4: ARQUITECTURA HEXAGONAL ══ -->
+        <section id="section-3" class="section">
+            <span class="badge purple-badge">Estructura del Código</span>
+            <h1>Arquitectura Hexagonal (Puertos y Adaptadores) ⬢</h1>
+            <p class="subtitle">Aislando las reglas de negocio del framework Spring Boot, bases de datos y APIs externas para asegurar portabilidad y mantenibilidad.</p>
+
+            <div class="hex-layout-container">
+                
+                <!-- Interactive SVG Hexagon Diagram -->
+                <div class="hex-svg-box">
+                    <svg viewBox="0 0 500 450" id="hex-svg">
+                        <!-- Outer Layer: Adapters -->
+                        <polygon points="250,20 460,120 460,330 250,430 40,330 40,120" 
+                                 fill="rgba(139, 92, 246, 0.03)" stroke="var(--purple)" stroke-width="5" 
+                                 class="hex-layer adapter-layer" id="layer-adapters" onclick="selectHexLayer('adapters')" />
+                        <text x="250" y="45" fill="var(--purple)" text-anchor="middle" font-weight="900" font-size="11" letter-spacing="1">ADAPTADORES EXTERNOS</text>
+                        
+                        <!-- Middle Layer: Ports -->
+                        <polygon points="250,80 410,160 410,290 250,370 90,290 90,160" 
+                                 fill="rgba(6, 182, 212, 0.03)" stroke="var(--cyan)" stroke-width="5" 
+                                 class="hex-layer ports-layer" id="layer-ports" onclick="selectHexLayer('ports')" />
+                        <text x="250" y="105" fill="var(--cyan)" text-anchor="middle" font-weight="900" font-size="11" letter-spacing="1">PUERTOS (INTERFACES)</text>
+                        
+                        <!-- Core Layer: Domain -->
+                        <polygon points="250,140 360,190 360,260 250,310 140,260 140,190" 
+                                 fill="var(--accent-dim)" stroke="var(--accent)" stroke-width="5" 
+                                 class="hex-layer domain-layer" id="layer-domain" onclick="selectHexLayer('domain')" />
+                        <text x="250" y="215" fill="var(--accent)" text-anchor="middle" font-weight="900" font-size="14" letter-spacing="1.5">DOMINIO</text>
+                        <text x="250" y="235" fill="white" text-anchor="middle" font-weight="600" font-size="10">Reglas de Negocio</text>
+                        <text x="250" y="250" fill="var(--text-dim)" text-anchor="middle" font-size="9">(Java Puro / Sin Frameworks)</text>
+                    </svg>
+                </div>
+
+                <!-- Info panel for the selected layer -->
+                <div class="hex-info-panel">
+                    <div>
+                        <div class="hex-info-header">
+                            <span class="hex-info-icon" id="hex-icon">⬢</span>
+                            <span class="hex-info-title" id="hex-title">Haz clic en el Hexágono</span>
+                        </div>
+                        <p class="hex-info-body" id="hex-description">Selecciona una capa en el diagrama de la izquierda (Dominio, Puertos o Adaptadores) para conocer sus responsabilidades de código y ver ejemplos Java prácticos.</p>
+                    </div>
+
+                    <!-- Code block viewer inside information panel -->
+                    <div id="hex-code-box" style="display: none;">
+                        <div class="hex-code-tabs">
+                            <button class="hex-tab-btn active-tab" onclick="switchHexTab(0)">Código Java</button>
+                            <button class="hex-tab-btn" onclick="switchHexTab(1)">Responsabilidad</button>
+                        </div>
+                        <div class="code-window" style="margin: 0;">
+                            <div class="code-body" id="hex-code-snippet" style="font-size: 0.7rem; padding: 0.8rem; max-height: 180px;">
+                                // Código cargado dinámicamente
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Real-World Enterprise Use Cases Section -->
+            <div style="margin-top: 3.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <i class="fa-solid fa-building text-accent"></i> Casos de Uso del Mundo Real (Empresas Reales)
+                </h3>
+                <div class="grid-3">
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <span class="badge" style="margin-bottom: 0.8rem; background: rgba(139,92,246,0.1); color: var(--purple); border-color: rgba(139,92,246,0.2);">Netflix</span>
+                        <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem; font-weight: 700;">Algoritmos de Recomendación</h4>
+                        <p style="font-size: 0.82rem; line-height: 1.5; color: var(--text-dim);">
+                            Aíslan los algoritmos matemáticos de recomendación de películas de los motores de bases de datos distribuidas (Cassandra, DynamoDB). Cambiar el motor de datos o migrar a la nube no altera la lógica de recomendación crítica.
+                        </p>
+                    </div>
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <span class="badge" style="margin-bottom: 0.8rem; background: rgba(6,182,212,0.1); color: var(--cyan); border-color: rgba(6,182,212,0.2);">Nubank / Fintech</span>
+                        <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem; font-weight: 700;">Core Transaccional</h4>
+                        <p style="font-size: 0.82rem; line-height: 1.5; color: var(--text-dim);">
+                            Desacoplan el motor de procesamiento de balances de los proveedores de redes de pago (VISA/Mastercard) y entidades externas de auditoría. Permite simular y probar transferencias sin conectarse a redes bancarias reales.
+                        </p>
+                    </div>
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <span class="badge" style="margin-bottom: 0.8rem; background: rgba(109,179,63,0.1); color: var(--accent); border-color: rgba(109,179,63,0.2);">Uber</span>
+                        <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem; font-weight: 700;">Cálculo de Tarifa Dinámica</h4>
+                        <p style="font-size: 0.82rem; line-height: 1.5; color: var(--text-dim);">
+                            Aíslan la lógica de tarifas dinámicas (oferta/demanda) de las peticiones móviles externas (HTTP, gRPC) y del proveedor de mapas (Google Maps API). Si cambian de mapas, el motor matemático de cobros no cambia.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ EJERCICIO: CLASIFICA EL COMPONENTE ═══ -->
+            <div style="margin-top: 3rem; background:rgba(109,179,63,0.03); border:1px solid rgba(109,179,63,0.2); border-radius:20px; padding:2rem;">
+                <h3 style="color:var(--accent); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem;">
+                    <i class="fa-solid fa-layer-group"></i> Ejercicio: ¿En qué capa va este componente?
+                </h3>
+                <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1.5rem;">Lee la descripción del componente y arrastra o selecciona la capa del hexágono donde debe vivir: <strong style="color:#10b981;">Dominio</strong>, <strong style="color:var(--cyan);">Puerto (Interfaz)</strong> o <strong style="color:var(--purple);">Adaptador Externo</strong>.</p>
+
+                <!-- Score -->
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:0.5rem 1.1rem; border-radius:10px; font-size:0.82rem;">
+                        Componente <span id="hex-ex-num" style="color:white;font-weight:800;">1</span>/6
+                    </div>
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); padding:0.5rem 1.1rem; border-radius:10px; font-size:0.82rem; color:#10b981; font-weight:700;">
+                        <i class="fa-solid fa-check"></i> <span id="hex-ex-score">0</span> correctas
+                    </div>
+                </div>
+
+                <!-- Component Card -->
+                <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.2rem;">
+                    <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:0.5rem;">Componente Java</div>
+                    <p id="hex-ex-component" style="font-size:1.05rem; font-weight:700; color:white;">ProductoService.java</p>
+                    <p id="hex-ex-desc" style="font-size:0.85rem; color:var(--text-dim); margin-top:0.4rem; line-height:1.5;">Clase que contiene la lógica para calcular el precio final de un producto aplicando descuentos por cliente VIP. No depende de ninguna librería externa.</p>
+                    <pre id="hex-ex-code" style="margin-top:0.8rem; background:#03050c; padding:10px; border-radius:8px; font-size:0.72rem; border:1px solid var(--border); color:#e6edf3; font-family:'Fira Code',monospace;">public class ProductoService {
+  public double calcularPrecio(Producto p, Cliente c) {
+    return c.esVip() ? p.getPrecio() * 0.85 : p.getPrecio();
+  }
+}</pre>
+                </div>
+
+                <!-- ── DEFINICIONES DE LAS 3 CAPAS ── -->
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;">
+
+                    <!-- Dominio -->
+                    <div style="background:rgba(109,179,63,0.05); border:1px solid rgba(109,179,63,0.25); border-radius:14px; padding:1.1rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+                            <span style="font-size:1.3rem;">⚙️</span>
+                            <strong style="color:#10b981; font-size:0.95rem;">Dominio</strong>
+                        </div>
+                        <p style="font-size:0.78rem; color:var(--text-dim); line-height:1.55; margin-bottom:0.6rem;">
+                            El <strong style="color:white;">corazón de la aplicación</strong>. Contiene las reglas de negocio puras escritas en Java simple, sin depender de Spring, JPA ni ninguna librería externa.
+                        </p>
+                        <div style="background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:8px; font-family:'Fira Code',monospace; font-size:0.68rem; color:#a3e635;">
+                            ✔ Clases de negocio<br>
+                            ✔ Reglas de cálculo<br>
+                            ✔ Entidades (sin @Entity)
+                        </div>
+                    </div>
+
+                    <!-- Puerto (Interfaz) -->
+                    <div style="background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.25); border-radius:14px; padding:1.1rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+                            <span style="font-size:1.3rem;">🔌</span>
+                            <strong style="color:var(--cyan); font-size:0.95rem;">Puerto (Interfaz)</strong>
+                        </div>
+                        <p style="font-size:0.78rem; color:var(--text-dim); line-height:1.55; margin-bottom:0.6rem;">
+                            Un <strong style="color:white;">contrato</strong> que el Dominio define para comunicarse con el exterior. Siempre es una <code style="background:rgba(255,255,255,0.05);padding:1px 4px;border-radius:3px;">interface</code> Java sin implementación concreta.
+                        </p>
+                        <div style="background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:8px; font-family:'Fira Code',monospace; font-size:0.68rem; color:#22d3ee;">
+                            ✔ interface XxxPort<br>
+                            ✔ Sin anotaciones Spring<br>
+                            ✔ Solo firmas de métodos
+                        </div>
+                    </div>
+
+                    <!-- Adaptador Externo -->
+                    <div style="background:rgba(139,92,246,0.05); border:1px solid rgba(139,92,246,0.25); border-radius:14px; padding:1.1rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+                            <span style="font-size:1.3rem;">🔧</span>
+                            <strong style="color:var(--purple); font-size:0.95rem;">Adaptador Externo</strong>
+                        </div>
+                        <p style="font-size:0.78rem; color:var(--text-dim); line-height:1.55; margin-bottom:0.6rem;">
+                            La <strong style="color:white;">implementación concreta</strong> que conecta el Dominio con el mundo real: base de datos, APIs externas, peticiones HTTP, etc.
+                        </p>
+                        <div style="background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:8px; font-family:'Fira Code',monospace; font-size:0.68rem; color:#c084fc;">
+                            ✔ @RestController<br>
+                            ✔ @Repository / JPA<br>
+                            ✔ SDK Stripe, Kafka…
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Layer buttons -->
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem;">
+                    <button class="mill-btn" onclick="checkHexLayer('domain')" style="border-color:rgba(109,179,63,0.3); padding:1rem; flex-direction:column; gap:0.3rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                        <span style="font-size:1.5rem;">⚙️</span>
+                        <strong style="color:#10b981;">Dominio</strong>
+                        <span style="font-size:0.7rem; color:var(--text-dim);">Reglas de negocio puras</span>
+                    </button>
+                    <button class="mill-btn" onclick="checkHexLayer('port')" style="border-color:rgba(6,182,212,0.3); padding:1rem; flex-direction:column; gap:0.3rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                        <span style="font-size:1.5rem;">🔌</span>
+                        <strong style="color:var(--cyan);">Puerto (Interfaz)</strong>
+                        <span style="font-size:0.7rem; color:var(--text-dim);">Contrato / Interface Java</span>
+                    </button>
+                    <button class="mill-btn" onclick="checkHexLayer('adapter')" style="border-color:rgba(139,92,246,0.3); padding:1rem; flex-direction:column; gap:0.3rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                        <span style="font-size:1.5rem;">🔧</span>
+                        <strong style="color:var(--purple);">Adaptador Externo</strong>
+                        <span style="font-size:0.7rem; color:var(--text-dim);">Controller / Repository / Client</span>
+                    </button>
+                </div>
+
+                <div id="hex-ex-feedback" style="display:none; padding:1rem; border-radius:12px; font-size:0.88rem; font-weight:600; line-height:1.5;"></div>
+                <button id="hex-ex-next" onclick="nextHexExercise()" style="display:none; background:var(--accent); color:#000; border:none; padding:0.6rem 1.4rem; border-radius:10px; font-weight:800; cursor:pointer; font-family:inherit; font-size:0.85rem; margin-top:0.8rem;">Siguiente Componente →</button>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(2)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(4)">Siguiente: Arquitectura en Acción <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 5: ARQUITECTURA EN ACCIÓN ══ -->
+        <section id="section-4" class="section">
+            <span class="badge cyan-badge">Interactividad</span>
+            <h1>Arquitectura en Acción ⚡</h1>
+            <p class="subtitle">Interactúa en tiempo real con este simulador para comprender cómo colaboran el Gateway, Eureka y las Bases de Datos en cada petición.</p>
+
+            <div class="simulator-area">
+                
+                <!-- Flow Selector Buttons -->
+                <div class="scenario-selector" style="display: flex; gap: 10px; margin-bottom: 1.5rem; justify-content: center; width: 100%; flex-wrap: wrap;">
+                    <button class="sim-btn" id="btn-scen-0" onclick="selectScenario(0)"><i class="fa-solid fa-cart-shopping"></i> GET /products/1 (Lectura)</button>
+                    <button class="sim-btn" id="btn-scen-1" onclick="selectScenario(1)"><i class="fa-solid fa-triangle-exclamation"></i> POST /orders (Circuit Breaker)</button>
+                    <button class="sim-btn" id="btn-scen-2" onclick="selectScenario(2)"><i class="fa-solid fa-heartbeat"></i> Eureka Heartbeat</button>
+                </div>
+
+                <!-- Simulation Topology Grid -->
+                <div class="sim-canvas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; width: 100%; margin: 1.5rem 0; background: rgba(0,0,0,0.25); padding: 25px; border-radius: 20px; border: 1px solid var(--border);">
+                    
+                    <!-- Col 1: Client & DB -->
+                    <div style="display: flex; flex-direction: column; gap: 30px; align-items: center; justify-content: center;">
+                        <div class="sim-node" id="node-browser">
+                            <span class="sim-icon">🌐</span>
+                            <strong>Cliente/Navegador</strong>
+                            <span class="sim-port" id="node-browser-port">Petición HTTP</span>
+                        </div>
+                        <div class="sim-node database" id="node-db">
+                            <span class="sim-icon">🗄️</span>
+                            <strong>PostgreSQL DB</strong>
+                            <span class="sim-port">Puerto :5432</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Col 2: Gateway & Services -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: center;">
+                        <div class="sim-node gateway" id="node-gateway">
+                            <span class="sim-icon">🔀</span>
+                            <strong>API Gateway</strong>
+                            <span class="sim-port">Puerto :8080</span>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
+                            <div class="sim-node" id="node-product" style="min-width: 100px;">
+                                <span class="sim-icon">📦</span>
+                                <strong>Product-S.</strong>
+                                <span class="sim-port">:8081</span>
+                            </div>
+                            <div class="sim-node" id="node-order" style="min-width: 100px;">
+                                <span class="sim-icon">🛒</span>
+                                <strong>Order-S.</strong>
+                                <span class="sim-port">:8082</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Col 3: Registry & External Services -->
+                    <div style="display: flex; flex-direction: column; gap: 30px; align-items: center; justify-content: center;">
+                        <div class="sim-node eureka" id="node-eureka">
+                            <span class="sim-icon">📡</span>
+                            <strong>Eureka Server</strong>
+                            <span class="sim-port">Puerto :8761</span>
+                        </div>
+                        <div class="sim-node payment-err" id="node-payment">
+                            <span class="sim-icon" id="node-payment-icon">❌</span>
+                            <strong>Payment-S.</strong>
+                            <span class="sim-port" id="node-payment-port">CAÍDO (:8083)</span>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Explanation banner for current step -->
+                <div class="step-explanation-box" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 1.2rem 1.8rem; border-radius: 16px; margin: 1rem 0;">
+                    <h4 id="step-title" style="color: var(--accent); margin-bottom: 0.4rem; font-weight: 700; font-size: 1.05rem;">
+                        Paso 1: Iniciando Simulador
+                    </h4>
+                    <p id="step-desc" style="font-size: 0.88rem; color: var(--text-dim); line-height: 1.6;">
+                        Elige un flujo de arriba y haz clic en "Siguiente Paso" para ver el recorrido paso a paso.
+                    </p>
+                </div>
+
+                <!-- Controls -->
+                <div class="sim-controls" style="display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; margin-top: 1.2rem;">
+                    <button class="sim-btn secondary-btn" onclick="prevStep()"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                    <span id="step-indicator" style="font-family: 'Fira Code', monospace; font-size: 0.82rem; font-weight: 700; color: var(--text-dim); padding: 0 10px;">Paso 0 / 0</span>
+                    <button class="sim-btn" onclick="nextStep()">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="sim-btn" onclick="autoPlay()" id="btn-autoplay" style="background: var(--cyan); border-color: var(--cyan); color: #000; font-weight: bold;"><i class="fa-solid fa-play"></i> Auto-Play</button>
+                </div>
+            </div>
+
+            <!-- Terminal output for simulation feedback -->
+            <div class="terminal-container" style="display: flex; gap: 15px; margin-top: 1.5rem; flex-wrap: wrap; width: 100%;">
+                
+                <!-- Panel 1: Logs -->
+                <div class="terminal-box" style="flex: 1; min-width: 300px; margin-top: 0;">
+                    <div class="terminal-header">
+                        <div class="term-dots">
+                            <div class="term-dot" style="background: #ff5f56;"></div>
+                            <div class="term-dot" style="background: #ffbd2e;"></div>
+                            <div class="term-dot" style="background: #27c93f;"></div>
+                        </div>
+                        <span class="term-title">system_logs.log</span>
+                        <i class="fa-solid fa-terminal" style="color: var(--cyan); font-size: 0.8rem;"></i>
+                    </div>
+                    <div class="terminal-body" id="sim-console" style="min-height: 180px; max-height: 250px; overflow-y: auto;">
+                        <span class="term-info">>> Consola en espera. Selecciona un flujo arriba para iniciar.</span>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Code / Config -->
+                <div class="terminal-box" style="flex: 1; min-width: 300px; margin-top: 0; border-color: rgba(6, 182, 212, 0.15);">
+                    <div class="terminal-header" style="background: rgba(6, 182, 212, 0.05); border-bottom-color: rgba(6, 182, 212, 0.15);">
+                        <div class="term-dots">
+                            <div class="term-dot" style="background: rgba(255,255,255,0.2);"></div>
+                            <div class="term-dot" style="background: rgba(255,255,255,0.2);"></div>
+                            <div class="term-dot" style="background: rgba(255,255,255,0.2);"></div>
+                        </div>
+                        <span class="term-title" style="color: var(--cyan);">code_reference.java / config.yml</span>
+                        <i class="fa-solid fa-code" style="color: var(--cyan); font-size: 0.8rem;"></i>
+                    </div>
+                    <div class="terminal-body" id="sim-code-preview" style="min-height: 180px; max-height: 250px; overflow-y: auto; font-family: 'Fira Code', monospace; font-size: 0.72rem; line-height: 1.4; color: #a9b1d6; background: #1a1b26; padding: 1rem;">
+                        <span style="color: #565f89;">// El código o configuración del paso activo se cargará aquí...</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(3)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(5)">Siguiente: Metodología Dojo <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 6: METODOLOGÍA DOJO ══ -->
+        <section id="section-5" class="section">
+            <span class="badge">Metodología</span>
+            <h1>El Formato Dojo (Aprender Haciendo) 🥋</h1>
+            <p class="subtitle">Este curso no es para escuchar diapositivas aburridas. Todo lo que aprendas lo construiremos juntos, paso a paso, durante la clase.</p>
+
+            <div class="grid-2">
+                <div class="glass-card">
+                    <h3><i class="fa-solid fa-circle-check text-accent"></i> Reglas de Oro del Curso</h3>
+                    <div style="margin-top: 1rem;">
+                        <div class="dojo-rule green">
+                            <i class="fa-solid fa-ban"></i>
+                            <span>Cero tareas largas para la casa</span>
+                        </div>
+                        <div class="dojo-rule green">
+                            <i class="fa-solid fa-laptop-code"></i>
+                            <span>Todo código se escribe y se prueba en vivo</span>
+                        </div>
+                        <div class="dojo-rule green">
+                            <i class="fa-solid fa-hands-helping"></i>
+                            <span>Acompañamiento asistido en cada paso</span>
+                        </div>
+                        <div class="dojo-rule green">
+                            <i class="fa-solid fa-circle-nodes"></i>
+                            <span>Compartir pantalla para destrabar errores</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3><i class="fa-solid fa-percent text-purple"></i> Porcentaje de Calificaciones</h3>
+                    <p style="margin-bottom: 1.5rem;">Las notas se construyen principalmente a través de retos prácticos realizados en la misma sesión.</p>
+                    
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem;">
+                            <span>Reto 1: Microservicio REST</span>
+                            <span style="color: var(--accent); font-weight: bold;">40%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem;">
+                            <span>Reto 2: Integración Eureka & JWT</span>
+                            <span style="color: var(--accent); font-weight: bold;">40%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding-bottom: 0.2rem;">
+                            <span>Participación y Laboratorios Dojo</span>
+                            <span style="color: var(--accent); font-weight: bold;">20%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(4)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(6)">Siguiente: Adaptabilidad de Red <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 7: ADAPTABILIDAD DE RED Y SOFTWARE ══ -->
+        <section id="section-6" class="section">
+            <span class="badge purple-badge">Entorno Corporativo</span>
+            <h1>Adaptabilidad en Entornos Corporativos 🛡️</h1>
+            <p class="subtitle">En el desarrollo profesional, los entornos corporativos suelen tener políticas de seguridad avanzadas. Aquí te mostramos cómo configurar tu entorno de forma segura y eficiente.</p>
+
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                
+                <!-- Left Column: Proxy & Ports -->
+                <div>
+                    <div class="bypass-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="bypass-card proxy" style="padding: 1.2rem;">
+                            <i class="fa-solid fa-globe"></i>
+                            <div class="bypass-content">
+                                <h4>1. Configuración de Red para Gestores de Dependencias</h4>
+                                <p style="font-size: 0.82rem; line-height: 1.4; color: var(--text-dim);">Cuando trabajamos bajo una intranet corporativa, es habitual configurar los proxies de red en herramientas como Maven o Gradle para permitir la correcta descarga de librerías.</p>
+                                <span class="bypass-code" style="font-size: 0.75rem;">Ubicación sugerida: ~/.m2/settings.xml</span>
+                            </div>
+                        </div>
+
+                        <div class="bypass-card security" style="padding: 1.2rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <div class="bypass-content">
+                                <h4>2. Gestión Dinámica de Puertos de Red</h4>
+                                <p style="font-size: 0.82rem; line-height: 1.4; color: var(--text-dim);">Si un puerto como el `:8080` ya está asignado a otro servicio del sistema local, podemos redirigir la escucha de nuestro microservicio de manera sencilla.</p>
+                                <span class="bypass-code" style="font-size: 0.75rem;">Configuración: server.port=9000 (en application.properties)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Software Packages to Install -->
+                <div class="glass-card" style="padding: 1.5rem; border-color: rgba(6,182,212,0.2);">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-download text-cyan"></i> Software Requerido para el Curso
+                    </h3>
+                    <p style="font-size: 0.82rem; margin-bottom: 1rem; color: var(--text-dim);">Asegúrate de tener instalados los siguientes componentes antes de iniciar la Clase 2:</p>
+                    
+                    <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.7rem; color: var(--text-dim);">
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <i class="fa-solid fa-cube text-cyan" style="margin-top: 3px;"></i>
+                            <div>
+                                <strong>JDK 21 LTS</strong>
+                                <div style="font-size: 0.75rem; color: #7a829e;">Eclipse Temurin (Adoptium) o Oracle OpenJDK recomendado.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <i class="fa-solid fa-code text-cyan" style="margin-top: 3px;"></i>
+                            <div>
+                                <strong>IDE de Desarrollo</strong>
+                                <div style="font-size: 0.75rem; color: #7a829e;">IntelliJ IDEA Community Edition o VS Code con Extension Pack para Java.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <i class="fa-solid fa-box-open text-cyan" style="margin-top: 3px;"></i>
+                            <div>
+                                <strong>Docker Desktop / Podman</strong>
+                                <div style="font-size: 0.75rem; color: #7a829e;">Necesario para levantar contenedores locales (PostgreSQL, Kafka) sin instalar localmente.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <i class="fa-solid fa-envelope text-cyan" style="margin-top: 3px;"></i>
+                            <div>
+                                <strong>Cliente HTTP (Postman / Thunder Client)</strong>
+                                <div style="font-size: 0.75rem; color: #7a829e;">Para enviar peticiones y validar los endpoints de los microservicios.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="concept-card" style="margin-top: 2rem; border-color: var(--orange); background: rgba(249,115,22,0.03);">
+                <h4><i class="fa-solid fa-circle-exclamation"></i> Recomendación para Talleres Prácticos</h4>
+                <p>Si encuentras bloqueos estrictos de políticas locales para levantar contenedores o compilar código, te sugerimos habilitar un <strong>entorno de desarrollo alternativo</strong> o utilizar un equipo personal para los talleres a partir de la Clase 2.</p>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(5)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <button class="nav-btn-step" onclick="switchSection(7)">Siguiente: Juego Millonario & Checklist <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- ══ SECCIÓN 8: EVALUACIÓN Y JUEGO MILLONARIO ══ -->
+        <section id="section-7" class="section">
+            <span class="badge purple-badge">Dinámica Grupal</span>
+            <h1>¿Quién Quiere Ser Millonario? 🏆</h1>
+            <p class="subtitle">¡Edición Java y Microservicios! Responde las preguntas en equipo con tus compañeros de clase para evaluar tu nivel y coronarte como Arquitecto de Microservicios.</p>
+
+            <div class="grid-1" style="margin-bottom: 2rem;">
+                <!-- STANDALONE GAME LAUNCH CARD -->
+                <div class="glass-card" style="border-color: var(--purple); background: rgba(139,92,246,0.03); padding: 3rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                    <div style="font-size: 3.5rem; text-shadow: 0 0 20px rgba(139,92,246,0.5);">🏆</div>
+                    <h2 style="font-size: 1.8rem; font-weight: 800; margin: 0; background: linear-gradient(135deg, var(--purple), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        ¿Quién Quiere Ser Millonario? — Edición Java & Microservicios
+                    </h2>
+                    <p style="max-width: 650px; font-size: 0.95rem; line-height: 1.6; color: var(--text-dim); margin: 0;">
+                        ¡Hemos llevado la dinámica de clase al siguiente nivel! Hemos creado una página dedicada con un juego de **10 preguntas** de dificultad incremental, comodines funcionales interactivos (50:50, Votación del grupo y Llamada al arquitecto) y un diseño inmersivo a pantalla completa.
+                    </p>
+                    <a href="juego_millonario.html" target="_blank" class="nav-btn-step" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--purple), var(--accent)); color: #000; border: none; font-weight: 800; font-size: 1.1rem; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; box-shadow: 0 0 25px rgba(139,92,246,0.4); transition: all 0.2s ease;">
+                        <i class="fa-solid fa-gamepad"></i> ¡Iniciar Juego en Nueva Pestaña!
+                    </a>
+                </div>
+            </div>
+
+            <!-- CHECKLIST OF READINESS -->
+            <div class="glass-card" style="border-color: rgba(109,179,63,0.3); padding: 1.8rem; margin-bottom: 2rem;">
+                <h3><i class="fa-solid fa-circle-check text-accent"></i> Checklist de Readiness para la Clase 2</h3>
+                <p style="font-size: 0.85rem; margin-bottom: 1.2rem; color: var(--text-dim);">Marca los elementos que ya tienes listos para la siguiente clase práctica:</p>
+                
+                <div class="grid-2" style="gap: 15px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; cursor: pointer; color: var(--text-dim);">
+                            <input type="checkbox" class="readiness-chk" onclick="updateReadinessProgress()" style="accent-color: var(--accent); width: 16px; height: 16px;">
+                            <span>JDK 21 instalado localmente</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; cursor: pointer; color: var(--text-dim);">
+                            <input type="checkbox" class="readiness-chk" onclick="updateReadinessProgress()" style="accent-color: var(--accent); width: 16px; height: 16px;">
+                            <span>IDE de desarrollo configurado (IntelliJ o VS Code)</span>
+                        </label>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; cursor: pointer; color: var(--text-dim);">
+                            <input type="checkbox" class="readiness-chk" onclick="updateReadinessProgress()" style="accent-color: var(--accent); width: 16px; height: 16px;">
+                            <span>Docker Desktop en ejecución</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; cursor: pointer; color: var(--text-dim);">
+                            <input type="checkbox" class="readiness-chk" onclick="updateReadinessProgress()" style="accent-color: var(--accent); width: 16px; height: 16px;">
+                            <span>Cliente HTTP (Postman, Thunder Client o Insomnia)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Readiness progress bar -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.4rem;">
+                        <span>Progreso de Configuración del Entorno</span>
+                        <span id="readiness-pct" style="font-weight: 700; color: var(--accent);">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; border: 1px solid var(--border);">
+                        <div id="readiness-bar" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn-step" onclick="switchSection(6)"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+                <div></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentSection = 0;
+        const totalSections = 8;
+
+        function switchSection(idx) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(`section-${idx}`).classList.add('active');
+            document.querySelectorAll('.nav-item')[idx].classList.add('active');
+            
+            currentSection = idx;
+            updateUI();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function updateUI() {
+            const p = ((currentSection + 1) / totalSections) * 100;
+            document.getElementById('progress-bar').style.width = p + '%';
+            document.getElementById('percent-val').innerText = Math.round(p) + '%';
+            
+            // Mark previous items as completed
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach((item, i) => {
+                if (i < currentSection) {
+                    item.classList.add('completed');
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+        }
+
+        // --- HEXAGON ARCHITECTURE WIDGET LOGIC ---
+        let currentHexLayer = 'domain';
+        let currentHexTab = 0;
+
+        const hexData = {
+            domain: {
+                icon: '⬢',
+                title: 'Capa de Dominio (Core Transaccional)',
+                description: 'Es el corazón de la aplicación. Contiene las entidades de negocio y la lógica de validación de negocio pura. <strong>Regla de Oro:</strong> Esta capa es Java puro. No debe importar ninguna librería de Spring, Hibernate, JPA o bases de datos. Permite que el núcleo del negocio sea portable e independiente.',
+                code: `<span class="k">public class</span> <span class="f">Cuenta</span> {\n    <span class="k">private</span> UUID id;\n    <span class="k">private</span> BigDecimal saldo;\n\n    <span class="k">public void</span> <span class="f">debitar</span>(BigDecimal monto) {\n        <span class="k">if</span> (monto.compareTo(BigDecimal.ZERO) &lt;= <span class="s">0</span>) {\n            <span class="k">throw new</span> <span class="f">MontoInvalidoException</span>();\n        }\n        <span class="k">if</span> (saldo.compareTo(monto) &lt; <span class="s">0</span>) {\n            <span class="k">throw new</span> <span class="f">SaldoInsuficienteException</span>();\n        }\n        saldo = saldo.subtract(monto);\n    }\n}`,
+                responsibility: '● Entidades de dominio (POJOs libres de @Entity).<br>● Excepciones de negocio custom.<br>● Lógica matemática de balances.'
+            },
+            ports: {
+                icon: '🔌',
+                title: 'Capa de Puertos (Interfaces del Dominio)',
+                description: 'Los Puertos definen las reglas de comunicación para entrar o salir del Dominio. Son simples interfaces Java.<br><br>1. **Puertos de Entrada (Inbound/Driving):** Casos de uso (ej. crear una transferencia).<br>2. **Puertos de Salida (Outbound/Driven):** Interfaces para base de datos o servicios remotos.',
+                code: `<span class="c">// Puerto de Entrada (Caso de Uso)</span>\n<span class="k">public interface</span> <span class="f">ProcesarTransferenciaUseCase</span> {\n    <span class="k">void</span> <span class="f">ejecutar</span>(UUID origenId, UUID destinoId, BigDecimal monto);\n}\n\n<span class="c">// Puerto de Salida (Persistencia)</span>\n<span class="k">public interface</span> <span class="f">CuentaRepositoryPort</span> {\n    Optional&lt;Cuenta&gt; <span class="f">buscarPorId</span>(UUID id);\n    <span class="k">void</span> <span class="f">guardar</span>(Cuenta cuenta);\n}`,
+                responsibility: '● Interfaces Inbound (Casos de Uso del negocio).<br>● Interfaces Outbound (Definición de persistencia o mensajería).<br>● Aislamiento de llamadas externas.'
+            },
+            adapters: {
+                icon: '⚙️',
+                title: 'Capa de Adaptadores (Infraestructura Spring)',
+                description: 'Los adaptadores conectan el mundo exterior a los Puertos de la aplicación. Aquí es donde vive Spring Boot.<br><br>1. **Adaptadores de Entrada:** Controladores REST, oyentes de Kafka, CLI.<br>2. **Adaptadores de Salida:** Repositorios JPA que conectan a PostgreSQL, clientes de APIs externas.',
+                code: `<span class="c">// Adaptador Inbound (REST Controller)</span>\n<span class="k">@RestController</span>\n<span class="k">public class</span> <span class="f">TransferRestController</span> {\n    <span class="k">private final</span> ProcesarTransferenciaUseCase <span class="s">useCase</span>;\n\n    <span class="k">@PostMapping</span>(<span class="s">"/transfer"</span>)\n    <span class="k">public void</span> <span class="f">transferir</span>(<span class="k">@RequestBody</span> TransferDto <span class="s">dto</span>) {\n        useCase.ejecutar(dto.origen(), dto.destino(), dto.monto());\n    }\n}`,
+                responsibility: '● Spring RestControllers con anotaciones Spring.<br>● Implementaciones de RepositoryPort usando Spring Data JPA.<br>● Mappers entre entidad de DB y entidad de Dominio.'
+            }
+        };
+
+        function selectHexLayer(layer) {
+            currentHexLayer = layer;
+            
+            // Remove active style from all layers
+            document.querySelectorAll('.hex-layer').forEach(l => l.classList.remove('active-layer'));
+            
+            // Add active style to selected layer
+            document.getElementById(`layer-${layer}`).classList.add('active-layer');
+            
+            document.getElementById('hex-code-box').style.display = 'block';
+            
+            updateHexPanel();
+        }
+
+        function switchHexTab(tabIdx) {
+            currentHexTab = tabIdx;
+            document.querySelectorAll('.hex-tab-btn').forEach((btn, idx) => {
+                if (idx === tabIdx) btn.classList.add('active-tab');
+                else btn.classList.remove('active-tab');
+            });
+            updateHexPanel();
+        }
+
+        function updateHexPanel() {
+            const data = hexData[currentHexLayer];
+            document.getElementById('hex-icon').innerText = data.icon;
+            document.getElementById('hex-title').innerText = data.title;
+            document.getElementById('hex-description').innerHTML = data.description;
+            
+            const codeSnippetEl = document.getElementById('hex-code-snippet');
+            if (currentHexTab === 0) {
+                codeSnippetEl.innerHTML = `<pre>${data.code}</pre>`;
+            } else {
+                codeSnippetEl.innerHTML = `<div style="font-family:'Outfit',sans-serif; font-size:0.88rem; line-height:1.6; color:#e6edf3;"><strong>Responsabilidad en la Arquitectura:</strong><br>${data.responsibility}</div>`;
+            }
+        }
+
+        // Initialize default view
+        selectHexLayer('domain');
+
+        // --- SIMULATOR LOGIC (STATE MACHINE) ---
+        let currentScenario = 0;
+        let currentStep = 0;
+        let autoPlayTimer = null;
+
+        const simScenarios = [
+            {
+                name: "GET /products/1 (Lectura Exitosa)",
+                steps: [
+                    {
+                        title: "Paso 1: Solicitud del Cliente",
+                        desc: "El cliente (un navegador o una aplicación web) inicia una petición HTTP GET para obtener información del producto 1. La solicitud llega al punto de entrada único: el API Gateway.",
+                        log: "<span class='term-info'>>> HTTP GET Request sent from Browser</span>\nGET /api/v1/products/1 HTTP/1.1\nHost: localhost:8080\nAccept: application/json",
+                        code: `<span class="k">GET</span> <span class="s">/api/v1/products/1</span>`,
+                        nodes: ["node-browser"],
+                        status: { "node-payment": "OFFLINE", "node-payment-icon": "❌" }
+                    },
+                    {
+                        title: "Paso 2: Gateway consulta a Eureka Registry",
+                        desc: "El API Gateway recibe la petición, pero no conoce la IP física del microservicio de productos. Hace una consulta en caliente al servidor Eureka para resolver la dirección de 'product-service'.",
+                        log: "<span class='term-info'>>> Gateway resolving logical name: 'product-service'</span>\n[EUREKA LOOKUP] Requesting instance map for serviceId='product-service'...\nEureka responds: FOUND 1 instance (http://192.168.1.50:8081)",
+                        code: `<span class="k">spring:</span>\n  <span class="k">cloud:</span>\n    <span class="k">gateway:</span>\n      <span class="k">routes:</span>\n        <span class="k">- id:</span> product_route\n          <span class="k">uri:</span> <span class="s">lb://product-service</span>`,
+                        nodes: ["node-gateway", "node-eureka"]
+                    },
+                    {
+                        title: "Paso 3: Redirección al Microservicio",
+                        desc: "El Gateway enruta la llamada HTTP hacia la instancia activa de 'product-service' (:8081). El balanceador de carga selecciona la IP resuelta.",
+                        log: "<span class='term-info'>>> Gateway forwarding to microservice</span>\nRouting request to: http://192.168.1.50:8081/products/1\n[Product-Service] GET request received at REST controller.",
+                        code: `<span class="k">@RestController</span>\n<span class="k">public class</span> <span class="f">ProductController</span> {\n    <span class="k">@GetMapping</span>(<span class="s">"/products/{id}"</span>)\n    <span class="k">public</span> Product <span class="f">getProduct</span>(<span class="k">@PathVariable</span> Long id) {\n        <span class="k">return</span> service.findById(id);\n    }\n}`,
+                        nodes: ["node-gateway", "node-product"]
+                    },
+                    {
+                        title: "Paso 4: Consulta a Base de Datos Privada",
+                        desc: "El servicio de productos interactúa con PostgreSQL para obtener el registro. Cumpliendo con los principios de microservicios, cada servicio gestiona su base de datos aislada sin accesos compartidos.",
+                        log: "<span class='term-info'>>> Product-Service querying PostgreSQL database...</span>\nExecuting SQL: SELECT id, name, price, stock FROM product WHERE id = 1;\nDatabase response: 1 row found.",
+                        code: `<span class="k">SELECT</span> * <span class="k">FROM</span> product <span class="k">WHERE</span> id = <span class="s">1</span>;`,
+                        nodes: ["node-product", "node-db"]
+                    },
+                    {
+                        title: "Paso 5: Retorno de Datos (200 OK)",
+                        desc: "El microservicio devuelve el resultado en formato JSON al Gateway, quien a su vez responde al navegador cliente de forma transparente en menos de 50ms.",
+                        log: "<span class='term-success'>HTTP/1.1 200 OK</span>\nContent-Type: application/json\n\n{\n  <span class='term-key'>\"id\"</span>: <span class='term-num'>1</span>,\n  <span class='term-key'>\"name\"</span>: <span class='term-str'>\"MacBook Pro M3\"</span>,\n  <span class='term-key'>\"price\"</span>: <span class='term-num'>1999.99</span>,\n  <span class='term-key'>\"stock\"</span>: <span class='term-num'>12</span>\n}",
+                        code: `<span class="k">JSON Response (200 OK)</span>`,
+                        nodes: ["node-browser", "node-gateway", "node-product"]
+                    }
+                ]
+            },
+            {
+                name: "POST /orders (Fallo & Resiliencia / Circuit Breaker)",
+                steps: [
+                    {
+                        title: "Paso 1: Solicitud de Compra",
+                        desc: "El navegador envía una solicitud HTTP POST al Gateway para crear una nueva orden de compra, incluyendo la cantidad y el ID del producto.",
+                        log: "<span class='term-info'>>> HTTP POST Request sent from Browser</span>\nPOST /api/v1/orders HTTP/1.1\nHost: localhost:8080\nContent-Type: application/json\n\n{ \"productId\": 1, \"quantity\": 1 }",
+                        code: `<span class="k">POST</span> <span class="s">/api/v1/orders</span>`,
+                        nodes: ["node-browser"],
+                        status: { "node-payment": "OFFLINE", "node-payment-icon": "❌" }
+                    },
+                    {
+                        title: "Paso 2: Ruteo a Order-Service",
+                        desc: "El Gateway recibe la solicitud, consulta Eureka y la redirige al microservicio de órdenes ('order-service' que corre en el puerto :8082).",
+                        log: "<span class='term-info'>>> Gateway routing to Order-Service</span>\nRouting request to: http://192.168.1.52:8082/orders\n[Order-Service] Initiating order creation workflow...",
+                        code: `<span class="k">spring:</span>\n  <span class="k">cloud:</span>\n    <span class="k">gateway:</span>\n      <span class="k">routes:</span>\n        <span class="k">- id:</span> order_route\n          <span class="k">uri:</span> <span class="s">lb://order-service</span>`,
+                        nodes: ["node-gateway", "node-order"]
+                    },
+                    {
+                        title: "Paso 3: Llamada a Payment-Service Caído",
+                        desc: "El microservicio de órdenes intenta validar el pago del usuario haciendo una llamada HTTP interna a 'payment-service'. Sin embargo, el servicio de pagos está caído (OFFLINE) y la petición falla.",
+                        log: "<span class='term-info'>>> Calling Payment Service...</span>\nRequest: POST http://payment-service/payments\n<span style='color:var(--red); font-weight:bold;'>[ERROR] Connection Timeout! Server http://192.168.1.53:8083 is unresponsive.</span>",
+                        code: `<span class="c">// Llamada HTTP fallida</span>\nrestTemplate.postForEntity(paymentUrl, req);`,
+                        nodes: ["node-order", "node-payment"]
+                    },
+                    {
+                        title: "Paso 4: Activación de Circuit Breaker & Fallback",
+                        desc: "El Circuit Breaker (Resilience4j) en Order-Service detecta que las peticiones a pagos fallan. Evita saturar el servidor, abre el circuito e invoca la lógica de contingencia (Fallback).",
+                        log: "<span class='term-info'>>> Circuit Breaker state: OPEN</span>\nIntercepting timeout exception.\nInvoking local fallback method: 'fallbackQueueOrder()'\nFallback: Queueing order in DB with status PENDING_PAYMENT.",
+                        code: `<span class="k">@CircuitBreaker</span>(name = <span class="s">"payment"</span>, fallbackMethod = <span class="s">"fallbackQueueOrder"</span>)\n<span class="k">public</span> Order <span class="f">createOrder</span>(OrderRequest req) {\n    <span class="c">// Lógica principal</span>\n}`,
+                        nodes: ["node-order"]
+                    },
+                    {
+                        title: "Paso 5: Respuesta de Contingencia (202 Accepted)",
+                        desc: "En lugar de lanzar un error 500 al cliente, el sistema responde con HTTP 202 Accepted. Le informa que la orden está encolada y se procesará automáticamente una vez se recupere la pasarela.",
+                        log: "<span class='term-success'>HTTP/1.1 202 Accepted - Alternate Response</span>\n\n{\n  <span class='term-key'>\"orderId\"</span>: <span class='term-str'>\"ORD-99827\"</span>,\n  <span class='term-key'>\"status\"</span>: <span class='term-str'>\"PENDING_PAYMENT\"</span>,\n  <span class='term-key'>\"message\"</span>: <span class='term-str'>\"Payment gateway offline. Transaction queued for retry.\"</span>\n}",
+                        code: `<span class="k">Fallback Response (202 Accepted)</span>`,
+                        nodes: ["node-browser", "node-gateway", "node-order"]
+                    }
+                ]
+            },
+            {
+                name: "Eureka Heartbeat (Autoregistro & Latidos)",
+                steps: [
+                    {
+                        title: "Paso 1: Inicio del Microservicio",
+                        desc: "Al arrancar el microservicio de Productos (Product-Service), lee la configuración local para conectarse al Servidor Eureka.",
+                        log: "<span class='term-info'>>> Starting Product Service...</span>\nPort: 8081\nEureka Registry URL: http://localhost:8761/eureka",
+                        code: `<span class="k">eureka:</span>\n  <span class="k">client:</span>\n    <span class="k">serviceUrl:</span>\n      <span class="k">defaultZone:</span> <span class="s">http://localhost:8761/eureka/</span>`,
+                        nodes: ["node-product"],
+                        status: { "node-payment": "ONLINE", "node-payment-icon": "💳" }
+                    },
+                    {
+                        title: "Paso 2: Registro en Eureka Registry",
+                        desc: "El microservicio envía un POST HTTP automático a Eureka con sus metadatos (nombre de servicio, IP, puerto de escucha) para registrarse como disponible.",
+                        log: "<span class='term-info'>>> Registering with Eureka Registry Server</span>\nPOST http://localhost:8761/eureka/apps/product-service\nPayload: { IP: 192.168.1.50, Port: 8081, status: UP }\n<span class='term-success'>[RESPONSE] Eureka registered successfully (HTTP 204 No Content)</span>",
+                        code: `<span class="k">@EnableDiscoveryClient</span>\n<span class="k">@SpringBootApplication</span>\n<span class="k">public class</span> <span class="f">ProductApp</span> { ... }`,
+                        nodes: ["node-product", "node-eureka"]
+                    },
+                    {
+                        title: "Paso 3: Envío de Latido (Heartbeat / Keep-Alive)",
+                        desc: "Cada 30 segundos de forma cíclica, el servicio envía un latido a Eureka. Si Eureka deja de recibir latidos durante 90 segundos, eliminará automáticamente la instancia del directorio por seguridad.",
+                        log: "<span class='term-info'>>> Sending periodic heartbeat pulse</span>\nPUT http://localhost:8761/eureka/apps/product-service/instance-id-1\nEureka updates instance status: UP\nNext heartbeat expected in 30 seconds.",
+                        code: `<span class="c">// Heartbeat heartbeat status log</span>\nDiscoveryClient: sending heartbeat...`,
+                        nodes: ["node-product", "node-eureka"]
+                    }
+                ]
+            }
+        ];
+
+        function selectScenario(scenIdx) {
+            currentScenario = scenIdx;
+            currentStep = 0;
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+                document.getElementById('btn-autoplay').innerHTML = '<i class="fa-solid fa-play"></i> Auto-Play';
+            }
+            
+            // Update button styles
+            for (let i = 0; i < 3; i++) {
+                const btn = document.getElementById(`btn-scen-${i}`);
+                if (i === scenIdx) {
+                    btn.style.background = 'var(--accent)';
+                    btn.style.borderColor = 'var(--accent)';
+                    btn.style.color = '#000';
+                } else {
+                    btn.style.background = 'rgba(255,255,255,0.05)';
+                    btn.style.borderColor = 'var(--border)';
+                    btn.style.color = 'white';
+                }
+            }
+            
+            renderStep();
+        }
+
+        function renderStep() {
+            const scen = simScenarios[currentScenario];
+            const step = scen.steps[currentStep];
+            
+            // Update Title & Desc
+            document.getElementById('step-title').innerText = `${step.title}`;
+            document.getElementById('step-desc').innerHTML = step.desc;
+            
+            // Update Indicator
+            document.getElementById('step-indicator').innerText = `Paso ${currentStep + 1} / ${scen.steps.length}`;
+            
+            // Update Console logs
+            document.getElementById('sim-console').innerHTML = step.log;
+
+            // Update Code Preview
+            const codeEl = document.getElementById('sim-code-preview');
+            if (codeEl) {
+                if (step.code) {
+                    codeEl.innerHTML = `<pre style="margin:0; background:transparent; padding:0; border:none; box-shadow:none;">${step.code}</pre>`;
+                } else {
+                    codeEl.innerHTML = `<span style="color: #565f89;">// Sin código asociado a este paso</span>`;
+                }
+            }
+            
+            // Remove active classes from all nodes
+            document.querySelectorAll('.sim-node').forEach(n => n.classList.remove('active-node'));
+            
+            // Highlight step nodes
+            step.nodes.forEach(nodeId => {
+                const el = document.getElementById(nodeId);
+                if (el) el.classList.add('active-node');
+            });
+            
+            // Handle specific overrides (like Payment Service going offline/online)
+            const nodePayment = document.getElementById('node-payment');
+            const nodePaymentIcon = document.getElementById('node-payment-icon');
+            const nodePaymentPort = document.getElementById('node-payment-port');
+            
+            if (step.status) {
+                if (step.status["node-payment"] === "OFFLINE") {
+                    nodePayment.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                    nodePayment.style.background = 'rgba(239, 68, 68, 0.05)';
+                    if (nodePaymentIcon) nodePaymentIcon.innerText = '❌';
+                    if (nodePaymentPort) nodePaymentPort.innerText = 'CAÍDO (:8083)';
+                } else {
+                    nodePayment.style.borderColor = 'rgba(255,255,255,0.08)';
+                    nodePayment.style.background = 'rgba(255,255,255,0.03)';
+                    if (nodePaymentIcon) nodePaymentIcon.innerText = '💳';
+                    if (nodePaymentPort) nodePaymentPort.innerText = 'Puerto :8083';
+                }
+            }
+        }
+
+        function nextStep() {
+            const scen = simScenarios[currentScenario];
+            if (currentStep < scen.steps.length - 1) {
+                currentStep++;
+                renderStep();
+            } else {
+                // Loop or complete
+                currentStep = 0;
+                renderStep();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        }
+
+        function autoPlay() {
+            const btn = document.getElementById('btn-autoplay');
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Auto-Play';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> Detener';
+                autoPlayTimer = setInterval(() => {
+                    nextStep();
+                }, 2500);
+            }
+        }
+
+        function switchMonoTab(tabIdx) {
+            document.querySelectorAll('.mono-pane').forEach((pane, idx) => {
+                if (idx === tabIdx) pane.style.display = 'block';
+                else pane.style.display = 'none';
+            });
+            document.querySelectorAll('[id^="btn-mono-tab-"]').forEach((btn, idx) => {
+                if (idx === tabIdx) btn.classList.add('active-tab');
+                else btn.classList.remove('active-tab');
+            });
+        }
+
+        function updateReadinessProgress() {
+            const checkboxes = document.querySelectorAll('.readiness-chk');
+            const checkedCount = Array.from(checkboxes).filter(chk => chk.checked).length;
+            const pct = Math.round((checkedCount / checkboxes.length) * 100);
+            
+            document.getElementById('readiness-pct').innerText = `${pct}%`;
+            document.getElementById('readiness-bar').style.width = `${pct}%`;
+        }
+
+        // Initialize default scenario
+        selectScenario(0);
+        switchMonoTab(0);
+        updateUI();
+
+        // ═══════════════════════════════════════════════
+        // LAB REST: ADIVINA EL VERBO HTTP
+        // ═══════════════════════════════════════════════
+        const restQuestions = [
+            { scenario: "El usuario quiere ver la lista de todos sus pedidos en la aplicación.", endpoint: "/api/orders", answer: "GET", explanation: "✅ GET es correcto. Solo queremos LEER datos sin modificar nada en el servidor." },
+            { scenario: "Un cliente nuevo completa el formulario de registro y hace clic en 'Crear cuenta'.", endpoint: "/api/users", answer: "POST", explanation: "✅ POST es correcto. Enviamos datos para CREAR un nuevo recurso en el servidor." },
+            { scenario: "El administrador quiere eliminar el producto con ID 42 del catálogo permanentemente.", endpoint: "/api/products/42", answer: "DELETE", explanation: "✅ DELETE es correcto. Queremos BORRAR el recurso identificado por el ID." },
+            { scenario: "El usuario actualiza su dirección de envío completa (nombre, calle, ciudad, código postal).", endpoint: "/api/users/5/address", answer: "PUT", explanation: "✅ PUT es correcto. Reemplazamos el recurso COMPLETO con los nuevos datos." },
+            { scenario: "El usuario solo quiere cambiar su email. El resto de su perfil no cambia.", endpoint: "/api/users/5/email", answer: "PATCH", explanation: "✅ PATCH es correcto. Modificamos PARCIALMENTE el recurso, solo el campo email." },
+            { scenario: "La app de e-commerce quiere obtener los detalles del producto con ID 7 para mostrarlo.", endpoint: "/api/products/7", answer: "GET", explanation: "✅ GET es correcto. Solo leemos la información del producto sin modificar nada." },
+            { scenario: "El sistema de pagos envía la confirmación de una transacción completada al microservicio de órdenes.", endpoint: "/api/orders/99/status", answer: "PATCH", explanation: "✅ PATCH es correcto. Actualizamos PARCIALMENTE la orden, solo su campo de estado." },
+            // ── 10 NUEVAS ──
+            { scenario: "El usuario ingresa su correo y contraseña para iniciar sesión en la aplicación.", endpoint: "/api/auth/login", answer: "POST", explanation: "✅ POST es correcto. Enviamos las credenciales en el cuerpo de la petición (nunca en la URL por seguridad). El servidor crea una sesión o retorna un token JWT." },
+            { scenario: "La app de catálogo quiere mostrar solo los productos de la categoría 'Electrónica' con precio menor a $500.", endpoint: "/api/products?categoria=electronica&maxPrecio=500", answer: "GET", explanation: "✅ GET es correcto. Los filtros van como query params en la URL. No creamos ni modificamos nada, solo filtramos la lectura." },
+            { scenario: "El supervisor quiere marcar como 'enviados' todos los pedidos del día de hoy de forma masiva.", endpoint: "/api/orders/bulk-status", answer: "PATCH", explanation: "✅ PATCH es correcto. Modificamos PARCIALMENTE múltiples recursos (solo el campo status). PUT reemplazaría todo el objeto, lo cual no queremos." },
+            { scenario: "El frontend necesita buscar usuarios cuyo nombre contenga la palabra 'Carlos'.", endpoint: "/api/users/search?q=Carlos", answer: "GET", explanation: "✅ GET es correcto. Una búsqueda es una operación de LECTURA. Los parámetros de búsqueda van en la query string de la URL." },
+            { scenario: "El usuario sube una foto de perfil nueva desde su teléfono móvil.", endpoint: "/api/users/5/avatar", answer: "PUT", explanation: "✅ PUT es correcto. Reemplazamos COMPLETAMENTE el avatar anterior con el nuevo archivo. Si solo actualizáramos un campo de metadata, usaríamos PATCH." },
+            { scenario: "El usuario agrega el producto con ID 15 a su lista de favoritos.", endpoint: "/api/users/3/favorites", answer: "POST", explanation: "✅ POST es correcto. Estamos CREANDO una nueva relación (favorito) entre el usuario y el producto. Esto genera un nuevo registro en la base de datos." },
+            { scenario: "El usuario cierra sesión en la aplicación y el token JWT debe invalidarse.", endpoint: "/api/auth/logout", answer: "POST", explanation: "✅ POST es correcto. El logout envía el token al servidor para invalidarlo (blacklist). Aunque no crea un recurso tradicional, modifica el estado del servidor, por eso no usamos GET." },
+            { scenario: "La app quiere cargar la segunda página de resultados de productos, mostrando 20 por página.", endpoint: "/api/products?page=2&size=20", answer: "GET", explanation: "✅ GET es correcto. La paginación es una forma de LEER datos. Los parámetros page y size son filtros de la consulta, no crean ni modifican nada." },
+            { scenario: "El administrador quiere reactivar una cuenta de usuario que había sido desactivada previamente.", endpoint: "/api/users/8/status", answer: "PATCH", explanation: "✅ PATCH es correcto. Solo estamos cambiando el campo 'activo' de false a true. No reemplazamos todo el objeto usuario, solo ese campo específico." },
+            { scenario: "El sistema de inventario necesita actualizar la cantidad en stock de un producto después de una venta.", endpoint: "/api/products/12/stock", answer: "PATCH", explanation: "✅ PATCH es correcto. Solo actualizamos el campo 'stock' del producto. Si usáramos PUT tendríamos que enviar todos los campos del producto completo, lo cual es innecesario e ineficiente." }
+        ];
+
+        let restCurrentQ = 0;
+        let restScore = 0;
+        let restAnswered = false;
+
+        document.getElementById('rest-q-total').textContent = restQuestions.length;
+
+        function checkRestVerb(selected) {
+            if (restAnswered) return;
+            restAnswered = true;
+            const q = restQuestions[restCurrentQ];
+            const isCorrect = selected === q.answer;
+            if (isCorrect) restScore++;
+
+            // Style options
+            ['GET','POST','PUT','DELETE','PATCH'].forEach(verb => {
+                const btn = document.getElementById(`rest-opt-${verb}`);
+                if (btn) {
+                    if (verb === q.answer) btn.classList.add('correct');
+                    else if (verb === selected && !isCorrect) btn.classList.add('incorrect');
+                    btn.disabled = true;
+                }
+            });
+
+            // Show feedback
+            const fb = document.getElementById('rest-feedback');
+            fb.style.display = 'block';
+            const statusLine = isCorrect
+                ? `<span style="color:#10b981; font-weight:800;">✅ HTTP/1.1 200 OK — Respuesta correcta!</span>`
+                : `<span style="color:#ef4444; font-weight:800;">❌ Incorrecto. La respuesta era ${q.answer}.</span>`;
+            fb.innerHTML = `${statusLine}\n\n<span style="color:var(--text-dim);">${q.explanation}</span>\n\n<span style="color:var(--cyan);">${q.answer} ${q.endpoint}</span>`;
+
+            document.getElementById('rest-score').textContent = restScore;
+            document.getElementById('rest-next-btn').style.display = 'inline-block';
+        }
+
+        function nextRestQuestion() {
+            restCurrentQ++;
+            if (restCurrentQ >= restQuestions.length) {
+                const fb = document.getElementById('rest-feedback');
+                fb.style.display = 'block';
+                fb.innerHTML = `<span style="color:#10b981; font-size:1.1rem; font-weight:800;">🏆 ¡Lab completado!</span> Obtuviste ${restScore}/${restQuestions.length} respuestas correctas.\n\n${restScore >= 5 ? '✨ Dominas los métodos HTTP. ¡Excelente!' : '📚 Repasa los verbos HTTP antes de la próxima clase.'}`;
+                document.getElementById('rest-next-btn').style.display = 'none';
+                document.getElementById('rest-options').style.opacity = '0.4';
+                return;
+            }
+            restAnswered = false;
+            const q = restQuestions[restCurrentQ];
+            document.getElementById('rest-scenario').textContent = q.scenario;
+            document.getElementById('rest-endpoint').textContent = `??? ${q.endpoint}`;
+            document.getElementById('rest-q-num').textContent = restCurrentQ + 1;
+            document.getElementById('rest-feedback').style.display = 'none';
+            document.getElementById('rest-next-btn').style.display = 'none';
+            ['GET','POST','PUT','DELETE','PATCH'].forEach(verb => {
+                const btn = document.getElementById(`rest-opt-${verb}`);
+                if (btn) { btn.className = 'mill-btn'; btn.disabled = false; }
+            });
+        }
+
+        // ═══════════════════════════════════════════════
+        // QUIZ STATUS CODES
+        // ═══════════════════════════════════════════════
+        const statusQuestions = [
+            { scenario: "Haces GET /users/999 pero el usuario con ID 999 no existe en la base de datos.", answer: 404, explanation: "404 Not Found: El servidor encontró la ruta pero el recurso específico no existe." },
+            { scenario: "Haces POST /orders con un JSON válido y el servidor crea la orden exitosamente.", answer: 201, explanation: "201 Created: Se usó para POST exitoso. Indica que el recurso fue creado correctamente." },
+            { scenario: "Intentas acceder a GET /admin/users sin token de autenticación.", answer: 401, explanation: "401 Unauthorized: No estás autenticado. Debes enviar un token JWT válido." },
+            { scenario: "El microservicio de pagos tiene un error interno de NullPointerException.", answer: 500, explanation: "500 Internal Server Error: Error en el servidor, no en el cliente. Hay un bug en el código." },
+            { scenario: "Haces DELETE /products/5 y el producto se elimina correctamente sin contenido que retornar.", answer: 204, explanation: "204 No Content: Operación exitosa pero sin cuerpo de respuesta. Común en DELETE y PUT." }
+        ];
+        const statusOptionsMap = {
+            0: [200, 404, 400, 500],
+            1: [200, 201, 204, 400],
+            2: [200, 401, 403, 404],
+            3: [200, 404, 422, 500],
+            4: [200, 201, 204, 404]
+        };
+
+        let statusCurrentQ = 0;
+        let statusAnswered = false;
+
+        function renderStatusOptions() {
+            const opts = statusOptionsMap[statusCurrentQ] || [200, 201, 404, 500];
+            const container = document.getElementById('status-options');
+            container.innerHTML = opts.map(code => `<button class="mill-btn" onclick="checkStatusCode(${code})">${code}</button>`).join('');
+        }
+        renderStatusOptions();
+
+        function checkStatusCode(selected) {
+            if (statusAnswered) return;
+            statusAnswered = true;
+            const q = statusQuestions[statusCurrentQ];
+            const isCorrect = selected === q.answer;
+
+            document.querySelectorAll('#status-options .mill-btn').forEach(btn => {
+                const code = parseInt(btn.textContent);
+                if (code === q.answer) btn.classList.add('correct');
+                else if (code === selected && !isCorrect) btn.classList.add('incorrect');
+                btn.disabled = true;
+            });
+
+            const fb = document.getElementById('status-feedback');
+            fb.style.display = 'block';
+            fb.style.background = isCorrect ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+            fb.style.border = isCorrect ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(239,68,68,0.25)';
+            fb.style.color = isCorrect ? '#10b981' : '#ef4444';
+            fb.innerHTML = `${isCorrect ? '✅' : '❌'} ${q.explanation}`;
+            document.getElementById('status-next-btn').style.display = 'inline-block';
+        }
+
+        function nextStatusQuestion() {
+            statusCurrentQ++;
+            if (statusCurrentQ >= statusQuestions.length) {
+                document.getElementById('status-feedback').innerHTML = `🏁 <strong>Quiz completo.</strong> Buen trabajo entendiendo los códigos de respuesta HTTP.`;
+                document.getElementById('status-next-btn').style.display = 'none';
+                return;
+            }
+            statusAnswered = false;
+            document.getElementById('status-scenario').textContent = statusQuestions[statusCurrentQ].scenario;
+            document.getElementById('status-feedback').style.display = 'none';
+            document.getElementById('status-next-btn').style.display = 'none';
+            renderStatusOptions();
+        }
+
+        // ═══════════════════════════════════════════════
+        // EJERCICIO HEXAGONAL: CLASIFICA EL COMPONENTE
+        // ═══════════════════════════════════════════════
+        const hexExercises = [
+            {
+                name: "ProductoService.java",
+                desc: "Clase que contiene la lógica para calcular el precio final de un producto aplicando descuentos por cliente VIP. No depende de ninguna librería externa.",
+                code: `public class ProductoService {\n  public double calcularPrecio(Producto p, Cliente c) {\n    return c.esVip() ? p.getPrecio() * 0.85 : p.getPrecio();\n  }\n}`,
+                answer: "domain",
+                explanation: "✅ ¡Correcto! Es DOMINIO. Contiene lógica de negocio pura (descuento VIP) sin imports de Spring, JPA ni ninguna librería externa. Si cambias de base de datos, esta clase no cambia."
+            },
+            {
+                name: "ProductoRepositoryPort.java",
+                desc: "Interface Java que define el contrato para guardar y buscar productos. No tiene implementación, solo define QUÉ operaciones son posibles.",
+                code: `public interface ProductoRepositoryPort {\n  Producto findById(Long id);\n  void save(Producto producto);\n  List<Producto> findAll();\n}`,
+                answer: "port",
+                explanation: "✅ ¡Correcto! Es un PUERTO (Interfaz). Define el CONTRATO entre el dominio y el mundo exterior. El dominio solo conoce esta interfaz, no la implementación real."
+            },
+            {
+                name: "ProductoController.java",
+                desc: "Clase anotada con @RestController de Spring Boot que recibe peticiones HTTP y las delega al servicio del dominio.",
+                code: `@RestController\n@RequestMapping(\"/api/productos\")\npublic class ProductoController {\n  @GetMapping(\"/{id}\")\n  public Producto getById(@PathVariable Long id) { ... }\n}`,
+                answer: "adapter",
+                explanation: "✅ ¡Correcto! Es un ADAPTADOR EXTERNO (entrada). Traduce peticiones HTTP del mundo exterior al lenguaje del dominio. Sin él, el dominio no sabe que existe HTTP."
+            },
+            {
+                name: "ProductoJpaRepository.java",
+                desc: "Clase que implementa ProductoRepositoryPort usando JPA/Hibernate y se conecta a PostgreSQL para persistir productos.",
+                code: `@Repository\npublic class ProductoJpaRepository implements ProductoRepositoryPort {\n  @PersistenceContext EntityManager em;\n  public Producto findById(Long id) { return em.find(Producto.class, id); }\n}`,
+                answer: "adapter",
+                explanation: "✅ ¡Correcto! Es un ADAPTADOR EXTERNO (salida). Implementa el puerto de repositorio usando JPA. Si cambias de PostgreSQL a MongoDB, solo cambias este adaptador."
+            },
+            {
+                name: "PagoServicePort.java",
+                desc: "Interface que define el contrato para procesar pagos con tarjeta. El dominio la usa pero no sabe si el pago irá a Stripe, PayU o Adyen.",
+                code: `public interface PagoServicePort {\n  boolean procesarPago(String tarjeta, double monto);\n  void reembolsar(String transaccionId);\n}`,
+                answer: "port",
+                explanation: "✅ ¡Correcto! Es un PUERTO (Interfaz). Abstrae el proveedor de pagos. El dominio programa contra esta interfaz, no contra Stripe directamente."
+            },
+            {
+                name: "StripePaymentAdapter.java",
+                desc: "Implementa PagoServicePort usando el SDK de Stripe. Se comunica con la API externa de Stripe para procesar cobros reales.",
+                code: `public class StripePaymentAdapter implements PagoServicePort {\n  private final Stripe stripe = new Stripe(API_KEY);\n  public boolean procesarPago(String tarjeta, double monto) {\n    return stripe.charge(tarjeta, monto).isSuccessful();\n  }\n}`,
+                answer: "adapter",
+                explanation: "✅ ¡Correcto! Es un ADAPTADOR EXTERNO (salida). Se comunica con Stripe. Si mañana cambias a PayU, solo reemplazas este adaptador sin tocar el dominio."
+            }
+        ];
+
+        let hexExNum = 0;
+        let hexExScore = 0;
+        let hexExSolved = false; // true once current question is correctly answered
+
+        function checkHexLayer(selected) {
+            if (hexExSolved) return; // already solved this one, ignore clicks
+
+            const ex = hexExercises[hexExNum];
+            const isCorrect = selected === ex.answer;
+
+            const fb = document.getElementById('hex-ex-feedback');
+            fb.style.display = 'block';
+
+            if (isCorrect) {
+                // ── CORRECT ──────────────────────────────────────────
+                hexExSolved = true;
+                hexExScore++;
+                document.getElementById('hex-ex-score').textContent = hexExScore;
+
+                // Lock all buttons and highlight the right one green
+                document.querySelectorAll('[onclick^="checkHexLayer"]').forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                });
+                // Highlight correct button green
+                const correctBtn = { domain: 0, port: 1, adapter: 2 }[ex.answer];
+                const allBtns = document.querySelectorAll('[onclick^="checkHexLayer"]');
+                if (allBtns[correctBtn]) {
+                    allBtns[correctBtn].disabled = false;
+                    allBtns[correctBtn].style.opacity = '1';
+                    allBtns[correctBtn].classList.add('correct');
+                }
+
+                fb.style.background = 'rgba(16,185,129,0.08)';
+                fb.style.border = '1px solid rgba(16,185,129,0.25)';
+                fb.style.color = '#10b981';
+                fb.innerHTML = ex.explanation;
+                document.getElementById('hex-ex-next').style.display = 'inline-block';
+
+            } else {
+                // ── WRONG — keep buttons active, let them retry ───────
+                const labelMap = { domain: 'Dominio', port: 'Puerto (Interfaz)', adapter: 'Adaptador Externo' };
+                const hintMap = {
+                    domain:  '💡 Pista: el DOMINIO es código Java puro, sin anotaciones de Spring ni librerías externas.',
+                    port:    '💡 Pista: un PUERTO es siempre una <em>interface</em> Java que define el contrato, no una clase concreta.',
+                    adapter: '💡 Pista: los ADAPTADORES usan Spring (@RestController, @Repository) o SDKs externos (Stripe, JPA).'
+                };
+
+                fb.style.background = 'rgba(239,68,68,0.08)';
+                fb.style.border = '1px solid rgba(239,68,68,0.25)';
+                fb.style.color = '#ef4444';
+                fb.innerHTML = `❌ <strong>${labelMap[selected]}</strong> no es correcto para este componente. Intenta de nuevo.<br><span style="font-size:0.85rem; color:var(--text-dim); margin-top:4px; display:block;">${hintMap[ex.answer]}</span>`;
+
+                // Flash the wrong button red then reset it
+                const btnMap = { domain: 0, port: 1, adapter: 2 };
+                const wrongIdx = btnMap[selected];
+                const allBtns = document.querySelectorAll('[onclick^="checkHexLayer"]');
+                if (allBtns[wrongIdx]) {
+                    allBtns[wrongIdx].classList.add('incorrect');
+                    setTimeout(() => allBtns[wrongIdx].classList.remove('incorrect'), 900);
+                }
+            }
+        }
+
+        function nextHexExercise() {
+            hexExNum++;
+            if (hexExNum >= hexExercises.length) {
+                const fb = document.getElementById('hex-ex-feedback');
+                fb.style.display = 'block';
+                fb.style.color = '#10b981';
+                fb.innerHTML = `🏆 <strong>Ejercicio completado!</strong> Obtuviste ${hexExScore}/${hexExercises.length}.<br>${hexExScore >= 5 ? '✨ Excelente comprensión de la arquitectura hexagonal.' : '📚 Revisa la diferencia entre Dominio, Puerto y Adaptador.'}`;
+                document.getElementById('hex-ex-next').style.display = 'none';
+                return;
+            }
+            hexExSolved = false;
+            const ex = hexExercises[hexExNum];
+            document.getElementById('hex-ex-num').textContent = hexExNum + 1;
+            document.getElementById('hex-ex-component').textContent = ex.name;
+            document.getElementById('hex-ex-desc').textContent = ex.desc;
+            document.getElementById('hex-ex-code').textContent = ex.code;
+            document.getElementById('hex-ex-feedback').style.display = 'none';
+            document.getElementById('hex-ex-next').style.display = 'none';
+            // Re-enable all layer buttons for next question
+            document.querySelectorAll('[onclick^="checkHexLayer"]').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.classList.remove('correct', 'incorrect');
+            });
+        }
+
+    </script>
+</body>
+</html>
